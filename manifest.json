@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "My Nav - 探索AI新世界",
+  "version": "1.0.0",
+  "description": "AI 导航新标签页，发现和探索 AI 工具与资源",
+  "permissions": ["storage", "bookmarks", "tabs"],
+  "chrome_url_overrides": {
+    "newtab": "index.html"
+  },
+  "icons": {
+    "16": "assets/icon-16.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "action": {
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "48": "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    }
+  }
+}

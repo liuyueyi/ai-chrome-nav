@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Nav - 探索AI新世界</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <div class="app">
+    <canvas id="particle-canvas" class="particle-background"></canvas>
+    
+    <header class="header">
+      <div class="header-left">
+        <div class="logo">
+          <div class="logo-icon"></div>
+          <div class="logo-text">
+            <span class="logo-title">AI Nav</span>
+            <span class="logo-subtitle">探索AI新世界</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="header-right">
+        <button class="btn btn-ghost" id="bookmarks-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg>
+          <span>书签</span>
+        </button>
+        <button class="btn btn-ghost" id="history-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          <span>历史</span>
+        </button>
+        <button class="btn btn-outline" id="add-nav-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <span>提交网站</span>
+        </button>
+        <button class="btn btn-outline" id="settings-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          <span>设置</span>
+        </button>
+        <button class="btn btn-ghost" id="theme-toggle">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="main">
+      <section class="search-section">
+        <div class="search-container">
+          <div class="clock" id="clock-display" style="display: none;">
+            <span class="time">00:00:00</span>
+            <span class="date">2024年1月1日 星期一</span>
+          </div>
+          <div class="search-box">
+            <div class="search-type">
+              <button class="search-type-btn">
+                站内 <span class="dropdown-arrow">▾</span>
+              </button>
+            </div>
+            <input type="search" class="search-input" placeholder="搜索AI工具、教程、资源..." autofocus>
+            <button class="search-btn">搜索</button>
+          </div>
+          
+          <div class="category-tabs">
+            <button class="category-tab active">全部</button>
+          </div>
+        </div>
+
+        <div class="hero-section">
+          <h1 class="hero-title">发现探索AI新世界的乐趣</h1>
+          <p class="hero-subtitle">发现、分享和收藏优质AI工具与资源，让你的人工智能生活更美好</p>
+        </div>
+      </section>
+
+      <section class="tools-section">
+        <div class="tools-grid" id="tools-container">
+          <!-- Tools will be dynamically inserted here -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>设置</h2>
+          <button class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="setting-item">
+            <label for="show-clock">显示时钟</label>
+            <input type="checkbox" id="show-clock" checked>
+          </div>
+          <div class="setting-item">
+            <label for="show-bookmarks">显示书签栏</label>
+            <input type="checkbox" id="show-bookmarks" checked>
+          </div>
+          <div class="setting-item">
+            <label for="particle-density">粒子密度</label>
+            <input type="range" id="particle-density" min="0" max="100" value="50">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" id="save-settings">保存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/particles.js"></script>
+  <script src="js/tools-data.js"></script>
+  <script src="js/clock.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
