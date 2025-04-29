@@ -1,9 +1,14 @@
 // 添加必要的样式
 const styles = `
+  body.light-theme {
+    background-color: #f8fafc;
+  }
+  
   .light-theme .tool-card {
     background-color: #ffffff;
     border-color: #e5e7eb;
     color: #1f2937;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   }
 
   .light-theme .tool-title {
@@ -35,6 +40,14 @@ const styles = `
     background-color: rgba(239, 68, 68, 0.1);
     color: rgb(239, 68, 68);
   }
+  
+  .light-theme .hero-title {
+    color: #1e293b;
+  }
+  
+  .light-theme .hero-subtitle {
+    color: #64748b;
+  }
   .add-tool-btn {
     display: flex;
     align-items: center;
@@ -55,6 +68,31 @@ const styles = `
     border-color: rgba(255, 255, 255, 0.4);
     color: rgba(255, 255, 255, 0.8);
   }
+  
+  .light-theme .add-tool-btn {
+    border: 2px dashed rgba(0, 0, 0, 0.1);
+    color: rgba(0, 0, 0, 0.5);
+  }
+
+  .light-theme .add-tool-btn:hover {
+    border-color: rgba(0, 0, 0, 0.2);
+    color: rgba(0, 0, 0, 0.7);
+  }
+  
+  body.dark-theme {
+    background-color: #0f172a;
+    background-image: linear-gradient(to bottom, #0f172a, #1e293b);
+  }
+  
+  .dark-theme .tool-card {
+    background-color: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  }
+  
+  .dark-theme .tool-card:hover {
+    background-color: rgba(15, 23, 42, 0.8);
+  }
 
   .delete-tool-btn {
     position: absolute;
@@ -72,6 +110,65 @@ const styles = `
     align-items: center;
     justify-content: center;
     transition: all 0.3s ease;
+  }
+  
+  .light-theme .btn-outline {
+    border-color: rgba(0, 0, 0, 0.1);
+    color: #1e293b;
+  }
+  
+  .light-theme .btn-outline:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+  
+  .light-theme .btn-ghost {
+    color: #64748b;
+  }
+  
+  .light-theme .btn-ghost:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #1e293b;
+  }
+  
+  .light-theme .particle-background {
+    opacity: 0.3;
+  }
+  
+  .dark-theme .particle-background {
+    opacity: 0.6;
+  }
+  
+  .light-theme .search-box {
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .light-theme .search-input {
+    color: #1e293b;
+  }
+  
+  .light-theme .search-input::placeholder {
+    color: #94a3b8;
+  }
+  
+  .light-theme .search-btn {
+    background-color: #3b82f6;
+    color: #ffffff;
+  }
+  
+  .light-theme .search-type-btn {
+    color: #64748b;
+  }
+  
+  .light-theme .category-tab {
+    background-color: rgba(0, 0, 0, 0.05);
+    color: #64748b;
+  }
+  
+  .light-theme .category-tab.active {
+    background-color: #3b82f6;
+    color: #ffffff;
   }
 
   .tool-card:hover .delete-tool-btn {
@@ -108,6 +205,26 @@ const styles = `
     width: 90%;
     max-width: 500px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .light-theme .modal-content {
+    background: #ffffff;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  }
+  
+  .light-theme .modal h2 {
+    color: #1e293b;
+  }
+  
+  .light-theme .form-group label {
+    color: #64748b;
+  }
+  
+  .light-theme .form-group input,
+  .light-theme .form-group textarea {
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: rgba(0, 0, 0, 0.02);
+    color: #1e293b;
   }
 
   .modal h2 {
@@ -166,6 +283,19 @@ if (themeToggle) {
     localStorage.setItem('theme', document.body.classList.contains('light-theme') ? 'light' : 'dark');
   });
 }
+
+// 初始化主题
+function initTheme() {
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'light') {
+    document.body.classList.add('light-theme');
+  } else {
+    document.body.classList.remove('light-theme');
+  }
+}
+
+// 页面加载时初始化主题
+document.addEventListener('DOMContentLoaded', initTheme);
 
 document.addEventListener("DOMContentLoaded", () => {
   // Declare toolsData (replace with actual data or import)
@@ -260,7 +390,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     draw(ctx) {
-      ctx.fillStyle = "rgba(255, 255, 255, 0.7)"
+      // 根据主题设置不同的粒子颜色和透明度
+      const isLightTheme = document.body.classList.contains('light-theme')
+      if (isLightTheme) {
+        ctx.fillStyle = "rgba(59, 130, 246, 0.3)" // 浅蓝色粒子用于白天模式
+      } else {
+        ctx.fillStyle = "rgba(255, 255, 255, 0.7)" // 白色粒子用于夜间模式
+      }
       ctx.beginPath()
       ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2)
       ctx.closePath()
