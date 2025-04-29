@@ -333,6 +333,22 @@ function initTheme() {
 // 页面加载时初始化主题
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
+
+  // // 检查URL参数是否包含添加工具的数据
+  // const urlParams = new URLSearchParams(window.location.search);
+  // if (urlParams.get('action') === 'add') {
+  //   console.log('添加工具的URL参数:', urlParams);
+  //   // 打开添加工具的模态框
+  //   openAddToolModal();
+
+  //   // 预填充表单数据
+  //   const form = document.getElementById('add-tool-form');
+  //   if (form) {
+  //     form.title.value = urlParams.get('title') || '';
+  //     form.url.value = urlParams.get('url') || '';
+  //     form.icon.value = urlParams.get('icon') || 'public/placeholder.svg';
+  //   }
+  // }
   // Declare toolsData (replace with actual data or import)
   const toolsData = [
     {
@@ -620,7 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
       views: 0,
       likes: 0,
       url: url,
-      category: form.category.value
+      category: form.category.value === 'new' ? '未分类' : form.category.value
     };
 
     currentTools.unshift(newTool); // 将新工具添加到数组开头
@@ -693,7 +709,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           </div>
           <div class="tool-actions">
-            <a class="btn btn-ghost" onclick="window.open('${tool.url}', '_blank')" href="${tool.url}" target="_blank">
+             <a class="btn btn-ghost" onclick="(function(e) { e.preventDefault(); const tools = JSON.parse(localStorage.getItem('toolsData')); const tool = tools.find(t => t.id === '${tool.id}'); if (tool) { tool.views++; localStorage.setItem('toolsData', JSON.stringify(tools)); renderTools(); } window.open('${tool.url}', '_blank'); })(event)" href="${tool.url}" target="_blank">
               访问网站
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
             </a>
@@ -819,13 +835,13 @@ document.addEventListener("DOMContentLoaded", () => {
     // Search functionality
     const searchInput = document.querySelector(".search-input")
     searchInput.addEventListener("input", (e) => {
-      if(!currentSearchEngine.url) {
+      if (!currentSearchEngine.url) {
         // 对于检索本地卡片时，根据输入内容进行过滤
         const query = searchInput.value.toLowerCase()
         filterToolsBySearch(query)
       }
     })
-    searchInput.onkeypress = function(e) {
+    searchInput.onkeypress = function (e) {
       // 回车，执行搜索逻辑
       if (e.key === 'Enter') {
         e.preventDefault()
@@ -974,27 +990,31 @@ document.addEventListener("DOMContentLoaded", () => {
       `
 
       toolsContainer.appendChild(toolCard)
-    })
+    });
   }
 
   function initSettings() {
-    // In a real extension, this would load from chrome.storage
-    // For demo, we'll use default values
-    document.getElementById("show-clock").checked = true
-    document.getElementById("show-bookmarks").checked = true
-    document.getElementById("particle-density").value = 50
+    // 从本地存储加载设置
+    const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+    document.getElementById("show-clock").checked = settings.showClock !== undefined ? settings.showClock : true;
+    document.getElementById("show-bookmarks").checked = settings.showBookmarks !== undefined ? settings.showBookmarks : true;
+    document.getElementById("particle-density").value = settings.particleDensity || 50;
   }
 
   function saveSettings() {
-    // In a real extension, this would save to chrome.storage
-    const showClock = document.getElementById("show-clock").checked
-    const showBookmarks = document.getElementById("show-bookmarks").checked
-    const particleDensity = document.getElementById("particle-density").value
+    const showClock = document.getElementById("show-clock").checked;
+    const showBookmarks = document.getElementById("show-bookmarks").checked;
+    const particleDensity = document.getElementById("particle-density").value;
 
-    console.log("Settings saved:", { showClock, showBookmarks, particleDensity })
+    const settings = {
+      showClock,
+      showBookmarks,
+      particleDensity
+    };
 
+    localStorage.setItem('settings', JSON.stringify(settings));
     // Update particle density
-    particles.updateDensity(particleDensity)
+    particles.updateDensity(particleDensity);
   }
 
   function toggleTheme() {
@@ -1014,4 +1034,27 @@ document.addEventListener("DOMContentLoaded", () => {
   if (savedTheme === 'dark') {
     document.body.classList.add('dark-theme')
   }
+
+  // 从其他页面过来的，用于自动添加导航
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('action') === 'add') {
+    console.log('添加工具的URL参数:', urlParams);
+    const url = urlParams.get('url');
+    // 检查URL是否重复
+    const currentTools = getToolsData();
+    const duplicateUrl = currentTools.find(tool => tool.url === url);
+    if (!duplicateUrl) {
+      // 打开添加工具的模态框
+      openAddToolModal();
+
+      // 预填充表单数据
+      const form = document.getElementById('add-tool-form');
+      if (form) {
+        form.title.value = urlParams.get('title') || '';
+        form.url.value = urlParams.get('url') || '';
+        form.icon.value = urlParams.get('icon') || 'public/placeholder.svg';
+      }
+    }
+  }
+
 })

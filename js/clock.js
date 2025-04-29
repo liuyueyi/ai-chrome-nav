@@ -25,6 +25,9 @@ function initClock() {
   const showClockCheckbox = document.getElementById('show-clock');
   const clockDisplay = document.getElementById('clock-display');
 
+  const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+  showClockCheckbox.checked = settings.showClock !== undefined ? settings.showClock : true;
+
   // 根据复选框状态显示/隐藏时钟
   function toggleClock() {
     clockDisplay.style.display = showClockCheckbox.checked ? 'block' : 'none';
