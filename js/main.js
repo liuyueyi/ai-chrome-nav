@@ -334,52 +334,9 @@ function initTheme() {
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
 
-  // // 检查URL参数是否包含添加工具的数据
-  // const urlParams = new URLSearchParams(window.location.search);
-  // if (urlParams.get('action') === 'add') {
-  //   console.log('添加工具的URL参数:', urlParams);
-  //   // 打开添加工具的模态框
-  //   openAddToolModal();
-
-  //   // 预填充表单数据
-  //   const form = document.getElementById('add-tool-form');
-  //   if (form) {
-  //     form.title.value = urlParams.get('title') || '';
-  //     form.url.value = urlParams.get('url') || '';
-  //     form.icon.value = urlParams.get('icon') || 'public/placeholder.svg';
-  //   }
-  // }
-  // Declare toolsData (replace with actual data or import)
   const toolsData = [
-    {
-      id: "tool1",
-      title: "AI Tool 1",
-      icon: "img/icon.svg",
-      status: "稳定运行",
-      statusColor: "green",
-      statusIndicator: "online",
-      description: "This is a description of AI Tool 1.",
-      views: 1234,
-      likes: 56,
-      url: "https://example.com/tool1",
-      category: "AI 聊天",
-    },
-    {
-      id: "tool2",
-      title: "AI Tool 2",
-      icon: "img/icon.svg",
-      status: "维护中",
-      statusColor: "orange",
-      statusIndicator: "maintenance",
-      description: "This is a description of AI Tool 2.",
-      views: 5678,
-      likes: 78,
-      url: "https://example.com/tool2",
-      category: "AI 聊天",
-    },
   ]
 
-  // Declare ParticleSystem (replace with actual class definition or import)
   class ParticleSystem {
     constructor(canvasId) {
       this.canvas = document.getElementById(canvasId)
@@ -703,13 +660,15 @@ document.addEventListener("DOMContentLoaded", () => {
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
               <span>${tool.views} 次访问</span>
             </div>
+            <!-- 
             <div class="stat">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
               <span>${tool.likes}</span>
             </div>
+            -->
           </div>
           <div class="tool-actions">
-             <a class="btn btn-ghost" onclick="(function(e) { e.preventDefault(); const tools = JSON.parse(localStorage.getItem('toolsData')); const tool = tools.find(t => t.id === '${tool.id}'); if (tool) { tool.views++; localStorage.setItem('toolsData', JSON.stringify(tools)); renderTools(); } window.open('${tool.url}', '_blank'); })(event)" href="${tool.url}" target="_blank">
+             <a class="btn btn-ghost" data-tool-id="${tool.id}" data-tool-url="${tool.url}" href="${tool.url}" target="_blank">
               访问网站
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
             </a>
@@ -726,6 +685,23 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log('删除按钮被点击'); // Log for debugging purpose
         const toolId = btn.getAttribute('data-tool-id');
         deleteTool(toolId);
+      });
+    });
+
+    // 绑定访问按钮点击事件
+    document.querySelectorAll('[data-tool-id]').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        const toolId = this.dataset.toolId;
+        const url = this.dataset.toolUrl;
+        const tools = JSON.parse(localStorage.getItem('toolsData'));
+        const tool = tools.find(t => t.id === toolId);
+        if (tool) {
+          tool.views++;
+          localStorage.setItem('toolsData', JSON.stringify(tools));
+          renderTools();
+        }
+        window.open(url, '_blank');
       });
     });
 
