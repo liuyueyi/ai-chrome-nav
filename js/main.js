@@ -3,6 +3,42 @@ const styles = `
   body.light-theme {
     background-color: #f8fafc;
   }
+
+  select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    background-color: var(--card-bg);
+    color: var(--foreground);
+    font-size: 1rem;
+    outline: none;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  select:hover {
+    border-color: var(--gray-300);
+  }
+
+  select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-hover);
+  }
+
+  .dark-theme select {
+    background-color: rgba(15, 23, 42, 0.6);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark-theme select:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .dark-theme select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  }
   
   .light-theme .tool-card {
     background-color: #ffffff;
@@ -295,9 +331,8 @@ function initTheme() {
 }
 
 // 页面加载时初始化主题
-document.addEventListener('DOMContentLoaded', initTheme);
-
 document.addEventListener("DOMContentLoaded", () => {
+  initTheme();
   // Declare toolsData (replace with actual data or import)
   const toolsData = [
     {
@@ -470,6 +505,11 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error('Category select element not found');
       return;
     }
+    // 如果已经存在 + 添加新分类，则不需要再加下面的内容
+    if (categorySelect.querySelector('option[value="new"]')) {
+      return;
+    }
+
     const newOption = document.createElement('option');
     newOption.value = 'new';
     newOption.textContent = '+ 添加新分类';
@@ -515,6 +555,10 @@ document.addEventListener("DOMContentLoaded", () => {
           <input type="url" id="url" name="url" required>
         </div>
         <div class="form-group">
+          <label for="icon">图标</label>
+          <input type="text" id="icon" name="icon" value="public/placeholder.svg" required>
+        </div>
+        <div class="form-group">
           <label for="category">分类</label>
           <select id="category" name="category" data-custom="allow">
             ${getCategories().map(c => `<option value="${c}">${c}</option>`).join('')}
@@ -552,24 +596,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 处理添加工具表单提交
   function handleAddToolSubmit(e) {
-    console.log('添加到导航卡片中')
     e.preventDefault();
     const form = e.target;
+    const url = form.url.value;
+
+    // 检查URL是否重复
+    const currentTools = getToolsData();
+    const duplicateUrl = currentTools.find(tool => tool.url === url);
+
+    if (duplicateUrl) {
+      alert('该网址已存在，请勿重复添加！');
+      return;
+    }
+
     const newTool = {
       id: 'tool' + Date.now(),
       title: form.title.value,
-      icon: 'img/icon.svg',
+      icon: form.icon.value || 'public/placeholder.svg', // 使用默认图片路径作为备用
       status: '稳定运行',
       statusColor: 'green',
       statusIndicator: 'online',
       description: form.description.value,
       views: 0,
       likes: 0,
-      url: form.url.value,
+      url: url,
       category: form.category.value
     };
 
-    const currentTools = getToolsData();
     currentTools.unshift(newTool); // 将新工具添加到数组开头
     saveToolsData(currentTools);
     renderTools();
@@ -696,7 +749,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function initCategoryFilterListener() {
     // Category tabs
     document.querySelectorAll(".category-tab").forEach((tab) => {
-      console.log('添加点击:', tab)
       tab.addEventListener("click", () => {
         document.querySelectorAll(".category-tab").forEach((t) => t.classList.remove("active"))
         tab.classList.add("active")
@@ -766,10 +818,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Search functionality
     const searchInput = document.querySelector(".search-input")
-    searchInput.addEventListener("input", () => {
-      const query = searchInput.value.toLowerCase()
-      filterToolsBySearch(query)
+    searchInput.addEventListener("input", (e) => {
+      if(!currentSearchEngine.url) {
+        // 对于检索本地卡片时，根据输入内容进行过滤
+        const query = searchInput.value.toLowerCase()
+        filterToolsBySearch(query)
+      }
     })
+    searchInput.onkeypress = function(e) {
+      // 回车，执行搜索逻辑
+      if (e.key === 'Enter') {
+        e.preventDefault()
+        const query = searchInput.value
+        doSearch(query)
+      }
+    }
 
     // Search engine dropdown
     const searchTypeBtn = document.querySelector(".search-type-btn")
@@ -781,7 +844,16 @@ document.addEventListener("DOMContentLoaded", () => {
       { name: "搜狗", url: "https://www.sogou.com/web?query=" },
       { name: "360", url: "https://www.so.com/s?q=" }
     ]
+
+    // 从本地存储加载搜索引擎配置
     let currentSearchEngine = searchEngines[0]
+    const savedSearchEngine = localStorage.getItem('searchEngine')
+    if (savedSearchEngine) {
+      const savedEngine = searchEngines.find(engine => engine.name === savedSearchEngine)
+      if (savedEngine) {
+        currentSearchEngine = savedEngine
+      }
+    }
 
     // Create dropdown menu
     const dropdown = document.createElement("div")
@@ -794,10 +866,15 @@ document.addEventListener("DOMContentLoaded", () => {
         currentSearchEngine = engine
         searchTypeBtn.firstChild.textContent = engine.name + " "
         dropdown.classList.remove("active")
+        // 保存搜索引擎选择到本地存储
+        localStorage.setItem('searchEngine', engine.name)
       })
       dropdown.appendChild(option)
     })
     searchTypeBtn.parentNode.appendChild(dropdown)
+
+    // 初始化搜索引擎按钮文本
+    searchTypeBtn.firstChild.textContent = currentSearchEngine.name + " "
 
     searchTypeBtn.addEventListener("click", (e) => {
       e.stopPropagation()
@@ -811,7 +888,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Search button
     const searchBtn = document.querySelector(".search-btn")
     searchBtn.addEventListener("click", () => {
-      const query = searchInput.value.trim()
+      doSearch(searchInput.value);
+    })
+
+    function doSearch(query) {
+      query = query.trim()
       if (query) {
         if (currentSearchEngine.url) {
           window.open(currentSearchEngine.url + encodeURIComponent(query), "_blank")
@@ -819,7 +900,7 @@ document.addEventListener("DOMContentLoaded", () => {
           filterToolsBySearch(query)
         }
       }
-    })
+    }
   }
 
   function filterToolsByCategory(category) {
