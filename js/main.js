@@ -148,14 +148,7 @@ const styles = `
     transition: all 0.3s ease;
   }
   
-  .light-theme .btn-outline {
-    border-color: rgba(0, 0, 0, 0.1);
-    color: #1e293b;
-  }
-  
-  .light-theme .btn-outline:hover {
-    background-color: rgba(0, 0, 0, 0.05);
-  }
+
   
   .light-theme .btn-ghost {
     color: #64748b;

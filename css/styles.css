@@ -45,6 +45,7 @@ body {
   --card-bg: rgba(15, 23, 42, 0.6);
   --card-hover: rgba(15, 23, 42, 0.8);
   --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  --nav-btn-color: white;
 }
 
 * {
@@ -176,11 +177,15 @@ body:before {
 
 .btn-outline {
   border: 1px solid var(--gray-300);
-  background-color: rgba(0, 0, 0, 0.2);
+  background-color: var(--primary);
+  color: var(--background);
+}
+.btn-outline .icon {
+  color: var(--background);
 }
 
 .btn-outline:hover {
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: var(--primary-hover);
 }
 
 .btn-primary {
