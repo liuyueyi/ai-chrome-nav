@@ -79,6 +79,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (existingTool) {
                 document.getElementById('category').value = existingTool.category;
                 document.getElementById('add-nav-btn').innerText = '更新导航卡';
+                document.getElementById('sort').value = existingTool.sort;
             }
         })
         document.getElementById('title').value = tab.title || '';
@@ -96,6 +97,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             url: document.getElementById('url').value,
             description: document.getElementById('description').value,
             category: document.getElementById('category').value,
+            sort: document.getElementById('sort').value,
             icon: tab.favIconUrl || 'public/placeholder.svg',
             views: 0,
             likes: 0,
@@ -113,12 +115,11 @@ document.addEventListener('DOMContentLoaded', async () => {
                     existingTool.description = formData.description;
                     existingTool.category = formData.category;
                     existingTool.icon = formData.icon;
+                    existingTool.sort = formData.sort;
                 } else {
                     // 添加新工具
                     tools.push(formData);
                 }
-
-                console.error('保存内容', JSON.stringify(tools))
 
                 // 保存更新后的工具列表
                 cacheSaveToolsData(tools).then(() => {

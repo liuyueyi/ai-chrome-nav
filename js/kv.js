@@ -5,6 +5,8 @@ function cacheGetToolsData() {
             let ans = result['toolsData']
             ans = ans ? JSON.parse(ans) : []
             console.warn('返回的内容是:', JSON.stringify(ans))
+            // 将ans根据sort进行排序
+            ans = ans.sort((a, b) => (b.sort || 0) - (a.sort || 0))
             resolve(ans);
         });
     });

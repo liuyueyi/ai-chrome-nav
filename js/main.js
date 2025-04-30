@@ -540,7 +540,11 @@ document.addEventListener("DOMContentLoaded", () => {
         </div>
         <div class="form-group">
           <label for="icon">图标</label>
-          <input type="text" id="icon" name="icon" value="public/placeholder.svg" required>
+          <input type="text" id="icon" name="icon" value="public/placeholder.svg">
+        </div>
+        <div class="form-group">
+          <label for="sort">排序(值越大，越排在前面)</label>
+          <input type="number" id="sort" name="sort" value="0" required>
         </div>
         <div class="form-group">
           <label for="category">分类</label>
@@ -586,6 +590,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (toolId) {
       getToolsData(currentTools => {
         const tool = currentTools.find(t => t.id === toolId);
+        console.log('准备编辑的工具:', tool);
         if (tool) {
           form['tool-id'].value = tool.id;
           form.title.value = tool.title;
@@ -593,6 +598,7 @@ document.addEventListener("DOMContentLoaded", () => {
           form.url.value = tool.url;
           form.icon.value = tool.icon;
           form.category.value = tool.category;
+          form.sort.value = tool.sort || 0;
           submitBtn.textContent = '保存';
           modalTitle.textContent = '编辑导航';
         }
@@ -621,10 +627,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = e.target;
     const url = form.url.value;
     const toolId = form['tool-id'].value;
-    // const currentTools = getToolsData();
     getToolsData(currentTools => {
-      // 如果是编辑现有工具
       if (toolId) {
+        // 如果是编辑现有工具
         const toolIndex = currentTools.findIndex(tool => tool.id === toolId);
         if (toolIndex !== -1) {
           // 检查URL是否与其他工具重复（排除当前工具）
@@ -638,10 +643,12 @@ document.addEventListener("DOMContentLoaded", () => {
             ...currentTools[toolIndex],
             title: form.title.value,
             icon: form.icon.value || 'public/placeholder.svg',
+            sort: form.sort.value || 0,
             description: form.description.value,
             url: url,
             category: form.category.value === 'new' ? '未分类' : form.category.value
           };
+          console.log('更新后的工具:', currentTools[toolIndex]);
           cacheSaveToolsData(currentTools).then(() => {
             renderTools();
             closeAddToolModal();
@@ -662,6 +669,7 @@ document.addEventListener("DOMContentLoaded", () => {
         id: 'tool' + Date.now(),
         title: form.title.value,
         icon: form.icon.value || 'public/placeholder.svg',
+        sort: form.sort.value || 0,
         status: '稳定运行',
         statusColor: 'green',
         statusIndicator: 'online',
@@ -775,6 +783,9 @@ document.addEventListener("DOMContentLoaded", () => {
       toolCard.className = "tool-card"
       toolCard.innerHTML = buildCardContent(tool);
       toolsContainer.appendChild(toolCard)
+
+      // 判断是否需要标记为喜欢
+      markNavCardLikedOrNot(tool);
     })
 
 
@@ -821,25 +832,37 @@ document.addEventListener("DOMContentLoaded", () => {
     getToolsData(currentToolsData => {
       const tool = currentToolsData.find((t) => t.id === toolId)
       if (tool) {
-        tool.likes = parseInt(tool.likes) + 1
+        const likeNum = parseInt(tool.likes)
+        if (likeNum > 0) {
+          // 取消收藏
+          tool.likes = 0
+        } else {
+          // 收藏
+          tool.likes = 1
+        }
         cacheSaveToolsData(currentToolsData).then(() => {
-          renderTools()
+          markNavCardLikedOrNot(tool);
         })
       }
-
-      // Toggle button style
-      const btn = document.querySelector(`.like-btn[data-id="${toolId}"]`)
-      if (btn) {
-        btn.classList.toggle("liked")
-        if (btn.classList.contains("liked")) {
-          btn.querySelector("svg").setAttribute("fill", "currentColor")
-          btn.style.color = "#ef4444"
-        } else {
-          btn.querySelector("svg").setAttribute("fill", "none")
-          btn.style.color = ""
-        }
-      }
     })
+  }
+
+  function markNavCardLikedOrNot(tool) {
+    if (!tool) {
+      return;
+    }
+    const likeBtn = document.querySelector(`.like-btn[data-id="${tool.id}"]`)
+    if (likeBtn) {
+      if (tool.likes > 0) {
+        likeBtn.classList.add("liked")
+        likeBtn.querySelector("svg").setAttribute("fill", "currentColor")
+        likeBtn.style.color = "#ef4444"
+      } else {
+        likeBtn.classList.remove("liked")
+        likeBtn.querySelector("svg").setAttribute("fill", "none")
+        likeBtn.style.color = ""
+      }
+    }
   }
 
   function initCategoryFilterListener() {
