@@ -163,7 +163,7 @@ const styles = `
   
   .light-theme .btn-ghost:hover {
     background-color: rgba(0, 0, 0, 0.05);
-    color: #1e293b;
+    color: rgb(239, 68, 68);
   }
   
   .light-theme .particle-background {
@@ -643,29 +643,74 @@ document.addEventListener("DOMContentLoaded", () => {
       toolCard.innerHTML = `
         <button class="delete-tool-btn" data-tool-id="${tool.id}">×</button>
         <div class="status-indicator ${tool.statusIndicator}"></div>
-        <div class="tool-header">
+        <div class="card-top">
           <div class="tool-icon">
-            <img src="${tool.icon}" alt="${tool.title}" width="20" height="20">
+            <img src="${tool.icon}" alt="${tool.title}" width="54" height="54" class="tool-icon-img">
           </div>
-          <h3 class="tool-title">${tool.title}</h3>
+          <div class="tool-right">
+            <a class="tool-header" href="${tool.url}" target="_blank">
+              <h3 class="tool-title">${tool.title}</h3>
+            </a>
+            <div class="tool-status green">${tool.category}</div>
+          </div>
+          <div class="compact-tools">
+            <div class="compact-stat">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span>${tool.views}</span>
+            </div>
+          </div>
+          <div class="tool-like">
+           <button class="btn btn-ghost like-btn" data-id="${tool.id}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            </button>
+          </div>
         </div>
-        <div class="tool-status green">${tool.category}</div>
+        <div class="tool-content">
+          <p class="tool-description">${tool.description}</p>
+        </div>
+        <div class="tool-footer">
+          <div class="tool-stats">
+            <div class="stat">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              <span>${tool.views}</span>
+            </div>
+            <div class="stat">
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+              <span>${tool.likes}</span>
+            </div>
+          </div>
+          <div class="tool-actions">
+            <a class="to_website" data-tool-id="${tool.id}" data-tool-url="${tool.url}" href="${tool.url}" target="_blank">
+              访问网站
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
+            </a>
+          </div>
+        </div>
+        
+        <!-- 
+        <div class="tool-icon">
+          <img src="${tool.icon}" alt="${tool.title}" width="20" height="20">
+        </div>
+        <div class="tool-content">
+          <div class="tool-header">
+            <h3 class="tool-title">${tool.title}</h3>
+          </div>
+          <p class="tool-description">${tool.description}</p>
+          <div class="tool-status green">${tool.category}</div>
+        </div>
         <button class="btn btn-ghost like-btn" data-id="${tool.id}">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
         </button>
-        <p class="tool-description">${tool.description}</p>
         <div class="tool-footer">
           <div class="tool-stats">
             <div class="stat">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
               <span>${tool.views} 次访问</span>
             </div>
-            <!-- 
             <div class="stat">
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
               <span>${tool.likes}</span>
             </div>
-            -->
           </div>
           <div class="tool-actions">
              <a class="btn btn-ghost" data-tool-id="${tool.id}" data-tool-url="${tool.url}" href="${tool.url}" target="_blank">
@@ -674,6 +719,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </a>
           </div>
         </div>
+          -->
       `
       toolsContainer.appendChild(toolCard)
     })
@@ -933,14 +979,16 @@ document.addEventListener("DOMContentLoaded", () => {
       toolCard.innerHTML = `
         <button class="delete-tool-btn" data-tool-id="${tool.id}">×</button>
         <div class="status-indicator ${tool.statusIndicator}"></div>
-        <div class="tool-header">
-          <div class="tool-icon">
-            <img src="${tool.icon}" alt="${tool.title}" width="20" height="20">
-          </div>
-          <h3 class="tool-title">${tool.title}</h3>
+        <div class="tool-icon">
+          <img src="${tool.icon}" alt="${tool.title}" width="20" height="20">
         </div>
-        <div class="tool-status ${tool.statusColor}">${tool.status}</div>
-        <p class="tool-description">${tool.description}</p>
+        <div class="tool-content">
+          <div class="tool-header">
+            <h3 class="tool-title">${tool.title}</h3>
+          </div>
+          <p class="tool-description">${tool.description}</p>
+          <div class="tool-status ${tool.statusColor}">${tool.status}</div>
+        </div>
         <div class="tool-footer">
           <div class="tool-stats">
             <div class="stat">
@@ -975,18 +1023,37 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("show-clock").checked = settings.showClock !== undefined ? settings.showClock : true;
     document.getElementById("show-bookmarks").checked = settings.showBookmarks !== undefined ? settings.showBookmarks : true;
     document.getElementById("particle-density").value = settings.particleDensity || 50;
+    document.getElementById("compact-view").checked = settings.compactView !== undefined ? settings.compactView : false;
+    
+    // 应用卡片视图模式
+    const mainContainer = document.querySelector('.main');
+    if (settings.compactView) {
+      mainContainer.classList.add('compact-view');
+    } else {
+      mainContainer.classList.remove('compact-view');
+    }
   }
 
   function saveSettings() {
     const showClock = document.getElementById("show-clock").checked;
     const showBookmarks = document.getElementById("show-bookmarks").checked;
     const particleDensity = document.getElementById("particle-density").value;
+    const compactView = document.getElementById("compact-view").checked;
 
     const settings = {
       showClock,
       showBookmarks,
-      particleDensity
+      particleDensity,
+      compactView
     };
+    
+    // 应用卡片视图模式
+    const mainContainer = document.querySelector('.main');
+    if (compactView) {
+      mainContainer.classList.add('compact-view');
+    } else {
+      mainContainer.classList.remove('compact-view');
+    }
 
     localStorage.setItem('settings', JSON.stringify(settings));
     // Update particle density

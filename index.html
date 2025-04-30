@@ -101,6 +101,10 @@
             <label for="particle-density">粒子密度</label>
             <input type="range" id="particle-density" min="0" max="100" value="50">
           </div>
+          <div class="setting-item">
+            <label for="compact-view">卡片缩略模式</label>
+            <input type="checkbox" id="compact-view">
+          </div>
         </div>
         <div class="modal-footer">
           <button class="btn btn-primary" id="save-settings">保存</button>
@@ -109,9 +113,16 @@
     </div>
   </div>
 
+  <!-- 视图切换按钮 -->
+  <button id="view-toggle-btn" class="floating-btn">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-grid"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+  </button>
+
+  <link rel="stylesheet" href="css/card-view-modes.css">
   <script src="js/particles.js"></script>
   <script src="js/tools-data.js"></script>
   <script src="js/clock.js"></script>
+  <script src="js/view-mode.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
