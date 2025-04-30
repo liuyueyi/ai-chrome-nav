@@ -724,7 +724,7 @@ document.addEventListener("DOMContentLoaded", () => {
             <img src="${tool.icon}" alt="${tool.title}" width="54" height="54" class="tool-icon-img">
           </div>
           <div class="tool-right">
-            <a class="tool-header" href="${tool.url}" target="_blank">
+            <a class="tool-header" href="${tool.url}" target="_blank" data-link-tool-id="${tool.id}" data-tool-url="${tool.url}">
               <h3 class="tool-title">${tool.title}</h3>
             </a>
             <div class="tool-status green">${tool.category}</div>
@@ -773,7 +773,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const toolsContainer = document.getElementById("tools-container")
     toolsContainer.innerHTML = ""
     if (filteredTools.length === 0) {
-      toolsContainer.innerHTML = '<div class="no-results">没有找到匹配的工具</div>'
+      toolsContainer.innerHTML = `<div>&nbsp;</div>
+      <div class="no-results">没有找到匹配的工具</div>
+      `
       return
     }
 
@@ -1050,7 +1052,7 @@ document.addEventListener("DOMContentLoaded", () => {
       toolsContainer.innerHTML = ""
 
       if (filteredTools.length === 0) {
-        toolsContainer.innerHTML = '<div class="no-results">没有找到匹配的工具</div>'
+        toolsContainer.innerHTML = '<div></div><div class="no-results">没有找到匹配的工具</div>'
         return
       }
 
