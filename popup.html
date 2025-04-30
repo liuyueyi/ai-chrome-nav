@@ -1,72 +1,105 @@
 <!DOCTYPE html>
 <html lang="zh">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>添加导航</title>
-  <style>
-    body {
-      width: 320px;
-      padding: 16px;
-      margin: 0;
-      font-family: system-ui, -apple-system, sans-serif;
-    }
-    .form-group {
-      margin-bottom: 12px;
-    }
-    label {
-      display: block;
-      margin-bottom: 4px;
-      font-size: 14px;
-      color: #333;
-    }
-    input {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      box-sizing: border-box;
-    }
-    .btn {
-      width: 100%;
-      padding: 8px;
-      background: #4CAF50;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .btn:hover {
-      background: #45a049;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加导航</title>
+    <style>
+        body {
+            width: 320px;
+            padding: 16px;
+            margin: 0;
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 14px;
+            color: #333;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 8px;
+            background: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn:hover {
+            background: #45a049;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .modal {
+            display: none;
+        }
+    </style>
 </head>
+
 <body>
-  <form id="addToolForm">
-    <div class="form-group">
-      <label for="title">标题</label>
-      <input type="text" id="title" name="title" required>
-    </div>
-    <div class="form-group">
-      <label for="url">网址</label>
-      <input type="url" id="url" name="url" required>
-    </div>
-    <div class="form-group">
-      <label for="description">描述</label>
-      <input type="text" id="description" name="description" required>
-    </div>
-    <div class="form-group">
-        <label for="icon">图标</label>
-        <input type="text" id="icon" name="icon" required>
-      </div>
-    <div class="form-group">
-      <label for="category">分类</label>
-      <input type="text" id="category" name="category" required>
-    </div>
-    <button type="submit" class="btn" id="add-nav-btn">添加到导航</button>
-  </form>
-  <script src="js/kv.js"></script>
-  <script src="js/popup.js"></script>
+    <form id="addToolForm">
+        <div class="form-group">
+            <label for="title">标题</label>
+            <input type="text" id="title" name="title" required>
+        </div>
+        <div class="form-group">
+            <label for="url">网址</label>
+            <input type="url" id="url" name="url" required>
+        </div>
+        <div class="form-group">
+            <label for="description">描述</label>
+            <input type="text" id="description" name="description" required>
+        </div>
+        <div class="form-group">
+            <label for="icon">图标</label>
+            <input type="text" id="icon" name="icon" required>
+        </div>
+        <div class="form-group">
+            <label for="category">分类</label>
+            <div id="categoryModal" class="modal">
+                <div class="modal-content">
+                    <h3>请输入新分类名称</h3>
+                    <input type="text" id="newCategoryInput" placeholder="新分类名称">
+                    <button id="confirmCategory">确认</button>
+                </div>
+            </div>
+            <!-- <input type="text" id="category" name="category" required> -->
+            <select id="category" name="category" data-custom="allow" required>
+                <!-- ${getCategories().map(c => `<option value="${c}">${c}</option>`).join('')} -->
+            </select>
+        </div>
+        <button type="submit" class="btn" id="add-nav-btn">添加到导航</button>
+    </form>
+    
+    <script src="js/kv.js"></script>
+    <script src="js/popup.js"></script>
 </body>
+
 </html>

@@ -183,6 +183,11 @@
     min-height: 52px;
 }
 
+.compact-view .tool-content {
+    padding-right: 2rem;
+    min-height: 42px;
+}
+
 /* 缩略模式样式 */
 .compact-view .tools-grid {
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));

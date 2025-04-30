@@ -11,6 +11,65 @@ document.addEventListener('DOMContentLoaded', async () => {
     }).then(results => results[0]?.result || '');
 
 
+    // 处理分类选择
+    function handleCategorySelect() {
+        const categorySelect = document.getElementById('category');
+        if (!categorySelect) {
+            console.warn('Category select element not found');
+            return;
+        }
+
+        categorySelect.innerHTML = '';
+        getToolsCategory().then(categories => {
+            categories.forEach(c => {
+                const option = document.createElement('option');
+                option.value = c;
+                option.textContent = c;
+                categorySelect.appendChild(option);
+            });
+        })
+
+        // 如果已经存在 + 添加新分类，则不需要再加下面的内容
+        if (categorySelect.querySelector('option[value="new"]')) {
+            return;
+        }
+
+        const newOption = document.createElement('option');
+        newOption.value = 'new';
+        newOption.textContent = '+ 添加新分类';
+        categorySelect.appendChild(newOption);
+        categorySelect.addEventListener('change', (e) => {
+            if (e.target.value === 'new') {
+                // 显示模态框
+                const modal = document.getElementById('categoryModal');
+                modal.style.display = 'block';
+
+                // 监听确认按钮点击
+                document.getElementById('confirmCategory').addEventListener('click', () => {
+                    const newCategory = document.getElementById('newCategoryInput').value;
+                    if (newCategory) {
+                        const option = document.createElement('option');
+                        option.value = newCategory;
+                        option.textContent = newCategory;
+                        categorySelect.insertBefore(option, categorySelect.lastChild);
+                        categorySelect.value = newCategory;
+                        // 隐藏模态框
+                        modal.style.display = 'none';
+                        // 清空输入框
+                        document.getElementById('newCategoryInput').value = '';
+                    }
+                });
+            } else {
+                // 隐藏模态框
+                const modal = document.getElementById('categoryModal');
+                modal.style.display = 'none';
+            }
+        });
+    }
+
+    // 初始化分类选择事件
+    handleCategorySelect();
+
     // 预填充表单
     if (tab) {
         cacheGetToolsData().then(tools => {

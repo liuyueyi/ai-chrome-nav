@@ -334,9 +334,6 @@ function initTheme() {
 document.addEventListener("DOMContentLoaded", () => {
   initTheme();
 
-  const toolsData = [
-  ]
-
   class ParticleSystem {
     constructor(canvasId) {
       this.canvas = document.getElementById(canvasId)
@@ -492,7 +489,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function handleCategorySelect() {
     const categorySelect = document.getElementById('category');
     if (!categorySelect) {
-      console.error('Category select element not found');
+      console.warn('Category select element not found');
       return;
     }
     // 如果已经存在 + 添加新分类，则不需要再加下面的内容
@@ -521,10 +518,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // 初始化分类选择事件
   handleCategorySelect();
 
-  // 保存工具数据到本地存储
-  function saveToolsData(data) {
-    localStorage.setItem('toolsData', JSON.stringify(data))
-  }
 
   // 添加导航卡片的模态框HTML
   const addToolModal = `
@@ -573,6 +566,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById('add-tool-form');
     const submitBtn = document.getElementById('submit-tool-btn');
     const modalTitle = modal.querySelector('h2');
+
+    const categorySelect = document.getElementById('category');
+    categorySelect.innerHTML = '';
+    getCategories().forEach(c => {
+      const option = document.createElement('option');
+      option.value = c;
+      option.textContent = c;
+      categorySelect.appendChild(option);
+    });
 
     // 重置表单
     form.reset();
@@ -640,10 +642,11 @@ document.addEventListener("DOMContentLoaded", () => {
             url: url,
             category: form.category.value === 'new' ? '未分类' : form.category.value
           };
-          saveToolsData(currentTools);
-          renderTools();
-          closeAddToolModal();
-          form.reset();
+          cacheSaveToolsData(currentTools).then(() => {
+            renderTools();
+            closeAddToolModal();
+            form.reset();
+          });
           return;
         }
       }
@@ -670,10 +673,11 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       currentTools.unshift(newTool);
-      saveToolsData(currentTools);
-      renderTools();
-      closeAddToolModal();
-      form.reset();
+      cacheSaveToolsData(currentTools).then(() => {
+        renderTools();
+        closeAddToolModal();
+        form.reset();
+      });
     })
   }
 
@@ -687,10 +691,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function deleteTool(toolId) {
     console.log('准备删除导航信息:', toolId);
     if (confirm('确定要删除这个导航吗？')) {
-      const currentTools = getToolsData();
-      const updatedTools = currentTools.filter(tool => tool.id !== toolId);
-      saveToolsData(updatedTools);
-      renderTools();
+      getToolsData(currentTools => {
+        const updatedTools = currentTools.filter(tool => tool.id !== toolId);
+        cacheSaveToolsData(updatedTools).then(() => {
+          renderTools();
+        })
+      })
     }
   }
 
@@ -737,8 +743,8 @@ document.addEventListener("DOMContentLoaded", () => {
               <span>${tool.views}</span>
             </div>
             <div class="stat">
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
-              <span>${tool.likes}</span>
+              <svg class="icon" style="width: 1em;height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="3144"><path d="M256 207.616a42.688 42.688 0 0 1-56.768-60.672l6.912-9.6c3.968-5.248 9.792-12.48 16.64-19.712 6.592-6.848 15.808-15.424 26.688-21.888 9.792-5.824 29.312-14.912 52.032-7.808a53.12 53.12 0 0 1 27.904 20.224 62.08 62.08 0 0 1 9.984 24.448c1.92 10.56 1.92 23.488 1.92 33.6v196.48c0 7.936 0 11.968 1.728 14.912a12.8 12.8 0 0 0 4.672 4.672C350.72 384 354.752 384 362.688 384a42.688 42.688 0 1 1 0 85.312h-128a42.688 42.688 0 1 1 0-85.312c7.936 0 11.968 0 14.912-1.728a12.8 12.8 0 0 0 4.672-4.672C256 374.656 256 370.624 256 362.688V207.616zM296.512 554.688H300.8c18.24 0 35.52 0 49.664 1.6 15.36 1.856 33.536 6.208 49.152 19.84 16.384 14.4 22.528 32.384 24.96 48.448 2.112 13.44 2.112 29.504 2.112 45.056v117.12c0 24 0 46.656-2.88 65.152-3.2 21.12-10.88 42.688-30.464 59.776-18.688 16.384-40.96 22.144-62.08 24.64-19.968 2.304-44.8 2.304-72.896 2.304h-45.056a42.688 42.688 0 0 1 0-85.312H256c31.232 0 50.88-0.064 65.28-1.728 13.44-1.6 15.808-4.032 15.872-4.096l0.064-0.064a31.104 31.104 0 0 0 2.24-8.448 190.72 190.72 0 0 0 1.664-24.064c0.256-11.904 0.384-17.92-3.392-21.76-3.712-3.84-9.856-3.84-22.016-3.84h-19.328c-18.176 0-35.392 0-49.536-1.664-15.36-1.792-33.536-6.144-49.088-19.84-16.448-14.336-22.592-32.32-25.024-48.384a313.28 313.28 0 0 1-2.048-45.056v-4.736c0-15.552 0-31.616 2.048-45.056 2.432-16.064 8.576-34.048 24.96-48.448 15.616-13.632 33.792-17.984 49.152-19.84 14.144-1.664 31.424-1.664 49.664-1.6z m19.2 149.312c12.096 0 18.112 0 21.888-3.776 3.712-3.712 3.712-9.792 3.712-21.824v-6.4c0-8.96 0-16-0.128-22.08a154.688 154.688 0 0 0-0.512-8.64 0.256 0.256 0 0 0-0.192-0.192A417.28 417.28 0 0 0 298.688 640c-21.184 0-33.28 0-41.856 1.088a0.256 0.256 0 0 0-0.192 0.192c-0.192 2.24-0.384 5.056-0.448 8.64C256 656 256 663.04 256 672c0 8.96 0 16 0.192 22.016 0.064 3.648 0.256 6.4 0.448 8.704 0 0.064 0.064 0.192 0.192 0.192 8.576 1.024 20.672 1.088 41.856 1.088h17.024zM714.88 128c23.616 0 42.688 19.072 42.688 42.624V704h24.896c7.488 0 16.64 0 24.192 0.896h0.128c5.44 0.704 30.016 3.84 41.728 27.904 11.712 24.192-1.152 45.44-3.968 50.112l-0.128 0.192a212.48 212.48 0 0 1-14.336 19.84l-1.024 1.28c-12.544 16-28.8 36.672-45.12 53.376a187.52 187.52 0 0 1-27.2 23.68c-8.768 6.016-23.68 14.72-42.048 14.72-18.368 0-33.28-8.704-42.112-14.72a187.648 187.648 0 0 1-27.2-23.68c-16.256-16.64-32.512-37.312-45.12-53.376l-1.024-1.28c-4.672-6.016-10.432-13.312-14.336-19.84l-0.128-0.128c-2.752-4.672-15.616-25.984-3.904-50.176 11.712-24.128 36.224-27.2 41.6-27.84h0.192c7.552-0.96 16.768-0.96 24.256-0.96h25.344V170.624c0-23.552 19.072-42.624 42.688-42.624z" fill="#333333" p-id="3145"></path></svg>
+              <span>${tool.sort || 0}</span>
             </div>
           </div>
           <div class="tool-actions">
@@ -792,8 +798,9 @@ document.addEventListener("DOMContentLoaded", () => {
           if (tool) {
             tool.views++;
             // 保存卡片数据
-            cacheSaveToolsData(tools)
-            renderTools();
+            cacheSaveToolsData(tools).then(() => {
+              renderTools();
+            });
           }
           window.open(url, '_blank');
         });
@@ -815,8 +822,9 @@ document.addEventListener("DOMContentLoaded", () => {
       const tool = currentToolsData.find((t) => t.id === toolId)
       if (tool) {
         tool.likes = parseInt(tool.likes) + 1
-        saveToolsData(currentToolsData)
-        renderTools()
+        cacheSaveToolsData(currentToolsData).then(() => {
+          renderTools()
+        })
       }
 
       // Toggle button style
@@ -902,6 +910,7 @@ document.addEventListener("DOMContentLoaded", () => {
       toggleTheme()
     })
 
+    // 分类标签切换
     initCategoryFilterListener();
 
     // Search functionality
