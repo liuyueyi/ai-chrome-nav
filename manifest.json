@@ -3,7 +3,7 @@
   "name": "QuickNav Suite - 3秒定制导航，90%操作提速",
   "version": "1.0.0",
   "description": "3秒定制导航，90%操作提速",
-  "permissions": ["storage", "bookmarks", "tabs", "activeTab"],
+  "permissions": ["storage", "bookmarks", "tabs", "activeTab", "scripting"],
   "chrome_url_overrides": {
     "newtab": "index.html"
   },

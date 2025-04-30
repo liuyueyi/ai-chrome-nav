@@ -433,21 +433,41 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize settings from storage
   initSettings()
 
+  let TOTAL_CATEGORY = [];
   // 从本地存储获取工具数据，如果不存在则使用默认数据
-  function getToolsData() {
-    const storedData = localStorage.getItem('toolsData')
-    return storedData ? JSON.parse(storedData) : toolsData
+  function getToolsData(resolve) {
+    cacheGetToolsData().then(tools => {
+      autoUpdateCategory(tools);
+      resolve(tools)
+    })
   }
 
-  function getCategories() {
-    const tools = getToolsData();
+  // 自动更新分类信息
+  function autoUpdateCategory(tools) {
     const categories = new Set();
     tools.forEach(tool => categories.add(tool.category));
-    return Array.from(categories);
+    let hasChange;
+    categories.forEach(category => {
+      if (!TOTAL_CATEGORY.includes(category)) {
+        hasChange = true;
+      }
+    });
+
+    if (TOTAL_CATEGORY.length !== categories.size || hasChange) {
+      TOTAL_CATEGORY = Array.from(categories);
+      renderCategoryTabs();
+      console.log('当前的分类信息:', TOTAL_CATEGORY)
+    }
+  }
+
+  // 当前的分类
+  function getCategories() {
+    return TOTAL_CATEGORY;
   }
 
   function renderCategoryTabs() {
     const categories = getCategories();
+    console.log('Rendering category tabs...', categories);
     const tabsContainer = document.querySelector('.category-tabs');
     tabsContainer.innerHTML = '';
 
@@ -467,9 +487,6 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('Category tabs rendered successfully');
     initCategoryFilterListener()
   }
-
-  // 渲染工具
-  renderCategoryTabs();
 
   // 处理分类选择
   function handleCategorySelect() {
@@ -565,18 +582,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // 如果是编辑现有工具
     if (toolId) {
-      const currentTools = getToolsData();
-      const tool = currentTools.find(t => t.id === toolId);
-      if (tool) {
-        form['tool-id'].value = tool.id;
-        form.title.value = tool.title;
-        form.description.value = tool.description;
-        form.url.value = tool.url;
-        form.icon.value = tool.icon;
-        form.category.value = tool.category;
-        submitBtn.textContent = '保存';
-        modalTitle.textContent = '编辑导航';
-      }
+      getToolsData(currentTools => {
+        const tool = currentTools.find(t => t.id === toolId);
+        if (tool) {
+          form['tool-id'].value = tool.id;
+          form.title.value = tool.title;
+          form.description.value = tool.description;
+          form.url.value = tool.url;
+          form.icon.value = tool.icon;
+          form.category.value = tool.category;
+          submitBtn.textContent = '保存';
+          modalTitle.textContent = '编辑导航';
+        }
+      })
     }
 
     modal.classList.add('active');
@@ -601,61 +619,62 @@ document.addEventListener("DOMContentLoaded", () => {
     const form = e.target;
     const url = form.url.value;
     const toolId = form['tool-id'].value;
-    const currentTools = getToolsData();
+    // const currentTools = getToolsData();
+    getToolsData(currentTools => {
+      // 如果是编辑现有工具
+      if (toolId) {
+        const toolIndex = currentTools.findIndex(tool => tool.id === toolId);
+        if (toolIndex !== -1) {
+          // 检查URL是否与其他工具重复（排除当前工具）
+          const duplicateUrl = currentTools.find(tool => tool.url === url && tool.id !== toolId);
+          if (duplicateUrl) {
+            alert('该网址已存在，请使用其他网址！');
+            return;
+          }
 
-    // 如果是编辑现有工具
-    if (toolId) {
-      const toolIndex = currentTools.findIndex(tool => tool.id === toolId);
-      if (toolIndex !== -1) {
-        // 检查URL是否与其他工具重复（排除当前工具）
-        const duplicateUrl = currentTools.find(tool => tool.url === url && tool.id !== toolId);
-        if (duplicateUrl) {
-          alert('该网址已存在，请使用其他网址！');
+          currentTools[toolIndex] = {
+            ...currentTools[toolIndex],
+            title: form.title.value,
+            icon: form.icon.value || 'public/placeholder.svg',
+            description: form.description.value,
+            url: url,
+            category: form.category.value === 'new' ? '未分类' : form.category.value
+          };
+          saveToolsData(currentTools);
+          renderTools();
+          closeAddToolModal();
+          form.reset();
           return;
         }
+      }
 
-        currentTools[toolIndex] = {
-          ...currentTools[toolIndex],
-          title: form.title.value,
-          icon: form.icon.value || 'public/placeholder.svg',
-          description: form.description.value,
-          url: url,
-          category: form.category.value === 'new' ? '未分类' : form.category.value
-        };
-        saveToolsData(currentTools);
-        renderTools();
-        closeAddToolModal();
-        form.reset();
+      // 添加新工具
+      const duplicateUrl = currentTools.find(tool => tool.url === url);
+      if (duplicateUrl) {
+        alert('该网址已存在，请勿重复添加！');
         return;
       }
-    }
 
-    // 添加新工具
-    const duplicateUrl = currentTools.find(tool => tool.url === url);
-    if (duplicateUrl) {
-      alert('该网址已存在，请勿重复添加！');
-      return;
-    }
+      const newTool = {
+        id: 'tool' + Date.now(),
+        title: form.title.value,
+        icon: form.icon.value || 'public/placeholder.svg',
+        status: '稳定运行',
+        statusColor: 'green',
+        statusIndicator: 'online',
+        description: form.description.value,
+        views: 0,
+        likes: 0,
+        url: url,
+        category: form.category.value === 'new' ? '未分类' : form.category.value
+      };
 
-    const newTool = {
-      id: 'tool' + Date.now(),
-      title: form.title.value,
-      icon: form.icon.value || 'public/placeholder.svg',
-      status: '稳定运行',
-      statusColor: 'green',
-      statusIndicator: 'online',
-      description: form.description.value,
-      views: 0,
-      likes: 0,
-      url: url,
-      category: form.category.value === 'new' ? '未分类' : form.category.value
-    };
-
-    currentTools.unshift(newTool);
-    saveToolsData(currentTools);
-    renderTools();
-    closeAddToolModal();
-    form.reset();
+      currentTools.unshift(newTool);
+      saveToolsData(currentTools);
+      renderTools();
+      closeAddToolModal();
+      form.reset();
+    })
   }
 
   // 添加表单提交事件监听
@@ -679,8 +698,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const toolsContainer = document.getElementById("tools-container")
     toolsContainer.innerHTML = ""
 
-    const currentToolsData = getToolsData()
-    renderFilteredTools(currentToolsData)
+    getToolsData(currentToolsData => renderFilteredTools(currentToolsData))
   }
 
   function buildCardContent(tool) {
@@ -724,11 +742,11 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           </div>
           <div class="tool-actions">
-            <div class="to_website edit-tool-btn" data-tool-id="${tool.id}">
+            <div class="edit-tool-btn" data-tool-id="${tool.id}">
               编辑
               <svg class="icon" style="width: 1em;height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2420"><path d="M884.950084 223.992517c2.362814 5.238304 4.217045 11.375072 5.687536 18.343787 1.470491 6.963599 2.172479 14.316054 2.172479 21.85782 0 7.605212-1.470491 15.146978-4.344958 22.751167-2.940982 7.608282-7.54279 14.895245-13.936407 21.862937-6.964622 7.030114-13.230326 13.101389-18.727527 18.343787-5.493108 5.238304-10.289344 9.904581-14.378475 13.994736-4.6673 4.6673-9.013281 8.757454-13.038968 12.272511L665.526629 189.795671c6.967692-6.389524 15.21247-14.126742 24.798802-23.200398 9.586332-9.012258 17.579377-16.171308 23.969924-21.411659 8.116865-6.389524 16.554024-10.929934 25.245987-13.548574 8.694009-2.622734 17.257036-3.770883 25.695219-3.515057 8.435113 0.318248 16.555048 1.594311 24.415063 3.962242 7.861038 2.301416 14.634302 4.985548 20.453844 7.860015 12.205996 6.393617 25.692149 17.641799 40.520879 33.68417C865.326141 189.730179 876.829126 206.541053 884.950084 223.992517zM206.550263 650.944516c3.452635-3.515057 11.634991-11.825326 24.352641-24.927739 12.784164-13.102413 28.761044-29.335119 47.872311-48.575322l63.597457-63.853283 70.562079-70.879304 187.206706-188.103122 162.857135 164.451446L575.790862 607.226828 506.121106 678.107155c-23.200398 22.754237-44.100404 43.591821-62.701041 62.573127-18.599613 18.983353-33.939997 34.579563-46.145993 46.786583-12.209066 12.271488-19.429515 19.240203-21.796422 21.027919-5.815449 5.241374-12.461823 10.80509-20.00359 16.620539-7.54279 5.815449-15.403828 10.478655-23.523763 13.993712-8.115841 4.093225-20.00359 9.012258-35.728736 14.894222-15.658631 5.815449-32.081673 11.502985-49.213865 17.063631-17.129122 5.562692-33.361829 10.354835-48.764634 14.44806-15.403828 4.089132-26.844392 6.707772-34.387181 7.860015-15.658631 1.726318-26.14138-0.574075-31.383778-6.967692-5.241374-6.390547-6.64535-17.191544-4.344958-32.341592 1.14815-8.179286 3.898797-19.938098 8.243755-35.407418 4.345981-15.468296 9.012258-31.510668 13.932314-48.128137 4.923126-16.617469 9.715269-31.957853 14.382569-45.955658 4.6673-13.998829 8.438183-23.647583 11.313673-28.888957 3.515057-8.182356 7.413853-15.59621 11.758812-22.308075C192.170764 666.540725 198.433398 659.126872 206.550263 650.944516zM499.029594 817.250192l77.848019 0 0 77.913511L499.029594 895.163703 499.029594 817.250192zM657.603169 817.250192l77.848019 0 0 77.913511-77.848019 0L657.603169 817.250192zM816.239166 817.250192l77.848019 0 0 77.913511-77.848019 0L816.239166 817.250192z" p-id="2421"></path></svg>
             </div>
-            <a class="to_website" data-tool-id="${tool.id}" data-tool-url="${tool.url}" href="${tool.url}" target="_blank">
+            <a class="to_website" data-link-tool-id="${tool.id}" data-tool-url="${tool.url}" href="${tool.url}" target="_blank">
               访问网站
               <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
             </a>
@@ -764,19 +782,21 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     // 绑定访问按钮点击事件
-    document.querySelectorAll('[data-tool-id]').forEach(btn => {
+    document.querySelectorAll('[data-link-tool-id]').forEach(btn => {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
-        const toolId = this.dataset.toolId;
+        const toolId = this.dataset.linkToolId;
         const url = this.dataset.toolUrl;
-        const tools = JSON.parse(localStorage.getItem('toolsData'));
-        const tool = tools.find(t => t.id === toolId);
-        if (tool) {
-          tool.views++;
-          localStorage.setItem('toolsData', JSON.stringify(tools));
-          renderTools();
-        }
-        window.open(url, '_blank');
+        getToolsData(tools => {
+          const tool = tools.find(t => t.id === toolId);
+          if (tool) {
+            tool.views++;
+            // 保存卡片数据
+            cacheSaveToolsData(tools)
+            renderTools();
+          }
+          window.open(url, '_blank');
+        });
       });
     });
 
@@ -791,26 +811,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function toggleLike(toolId) {
-    const currentToolsData = getToolsData()
-    const tool = currentToolsData.find((t) => t.id === toolId)
-    if (tool) {
-      tool.likes = parseInt(tool.likes) + 1
-      saveToolsData(currentToolsData)
-      renderTools()
-    }
-
-    // Toggle button style
-    const btn = document.querySelector(`.like-btn[data-id="${toolId}"]`)
-    if (btn) {
-      btn.classList.toggle("liked")
-      if (btn.classList.contains("liked")) {
-        btn.querySelector("svg").setAttribute("fill", "currentColor")
-        btn.style.color = "#ef4444"
-      } else {
-        btn.querySelector("svg").setAttribute("fill", "none")
-        btn.style.color = ""
+    getToolsData(currentToolsData => {
+      const tool = currentToolsData.find((t) => t.id === toolId)
+      if (tool) {
+        tool.likes = parseInt(tool.likes) + 1
+        saveToolsData(currentToolsData)
+        renderTools()
       }
-    }
+
+      // Toggle button style
+      const btn = document.querySelector(`.like-btn[data-id="${toolId}"]`)
+      if (btn) {
+        btn.classList.toggle("liked")
+        if (btn.classList.contains("liked")) {
+          btn.querySelector("svg").setAttribute("fill", "currentColor")
+          btn.style.color = "#ef4444"
+        } else {
+          btn.querySelector("svg").setAttribute("fill", "none")
+          btn.style.color = ""
+        }
+      }
+    })
   }
 
   function initCategoryFilterListener() {
@@ -971,13 +992,15 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function filterToolsByCategory(category) {
-    const currentToolsData = getToolsData()
-    if (category === "全部") {
-      renderTools()
-    } else {
-      const filteredTools = currentToolsData.filter(tool => tool.category === category)
-      renderFilteredTools(filteredTools)
-    }
+    getToolsData(currentToolsData => {
+      if (category === "全部") {
+        renderTools()
+      } else {
+        const filteredTools = currentToolsData.filter(tool => tool.category === category)
+        renderFilteredTools(filteredTools)
+      }
+    })
+
   }
 
   function filterToolsBySearch(query) {
@@ -986,25 +1009,26 @@ document.addEventListener("DOMContentLoaded", () => {
       return
     }
 
-    const currentToolsData = getToolsData()
-    const filteredTools = currentToolsData.filter(
-      (tool) => tool.title.toLowerCase().includes(query) || tool.description.toLowerCase().includes(query),
-    )
+    getToolsData(currentToolsData => {
+      const filteredTools = currentToolsData.filter(
+        (tool) => tool.title.toLowerCase().includes(query) || tool.description.toLowerCase().includes(query),
+      )
 
-    const toolsContainer = document.getElementById("tools-container")
-    toolsContainer.innerHTML = ""
+      const toolsContainer = document.getElementById("tools-container")
+      toolsContainer.innerHTML = ""
 
-    if (filteredTools.length === 0) {
-      toolsContainer.innerHTML = '<div class="no-results">没有找到匹配的工具</div>'
-      return
-    }
+      if (filteredTools.length === 0) {
+        toolsContainer.innerHTML = '<div class="no-results">没有找到匹配的工具</div>'
+        return
+      }
 
-    filteredTools.forEach((tool) => {
-      const toolCard = document.createElement("div")
-      toolCard.className = "tool-card"
-      toolCard.innerHTML = buildCardContent(tool);
-      toolsContainer.appendChild(toolCard)
-    });
+      filteredTools.forEach((tool) => {
+        const toolCard = document.createElement("div")
+        toolCard.className = "tool-card"
+        toolCard.innerHTML = buildCardContent(tool);
+        toolsContainer.appendChild(toolCard)
+      });
+    })
   }
 
   function initSettings() {
@@ -1014,7 +1038,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("show-bookmarks").checked = settings.showBookmarks !== undefined ? settings.showBookmarks : true;
     document.getElementById("particle-density").value = settings.particleDensity || 50;
     document.getElementById("compact-view").checked = settings.compactView !== undefined ? settings.compactView : false;
-    
+
     // 应用卡片视图模式
     const mainContainer = document.querySelector('.main');
     if (settings.compactView) {
@@ -1036,7 +1060,7 @@ document.addEventListener("DOMContentLoaded", () => {
       particleDensity,
       compactView
     };
-    
+
     // 应用卡片视图模式
     const mainContainer = document.querySelector('.main');
     if (compactView) {
@@ -1074,29 +1098,31 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('添加工具的URL参数:', urlParams);
     const url = urlParams.get('url');
     // 检查URL是否重复
-    const currentTools = getToolsData();
-    const duplicateUrl = currentTools.find(tool => tool.url === url);
-    if (!duplicateUrl) {
-      // 打开添加工具的模态框
-      openAddToolModal();
+    getToolsData(currentTools => {
+      const duplicateUrl = currentTools.find(tool => tool.url === url);
+      if (!duplicateUrl) {
+        // 打开添加工具的模态框
+        openAddToolModal();
 
-      // 预填充表单数据
-      const form = document.getElementById('add-tool-form');
-      if (form) {
-        form.title.value = urlParams.get('title') || '';
-        form.url.value = urlParams.get('url') || '';
-        form.icon.value = urlParams.get('icon') || 'public/placeholder.svg';
+        // 预填充表单数据
+        const form = document.getElementById('add-tool-form');
+        if (form) {
+          form.title.value = urlParams.get('title') || '';
+          form.url.value = urlParams.get('url') || '';
+          form.icon.value = urlParams.get('icon') || 'public/placeholder.svg';
+        }
       }
-    }
+    });
   }
 
 
-  // 编辑卡片事件
-  document.getElementById("tools-container").querySelectorAll('.edit-tool-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-      console.log('按钮点击了')
-      const toolId = btn.getAttribute('data-tool-id');
+  // 编辑卡片事件 - 使用事件委托
+  document.getElementById("tools-container").addEventListener('click', (e) => {
+    e.preventDefault();
+    const editBtn = e.target.closest('.edit-tool-btn');
+    if (editBtn) {
+      const toolId = editBtn.getAttribute('data-tool-id');
       openAddToolModal(toolId);
-    });
+    }
   });
 })
