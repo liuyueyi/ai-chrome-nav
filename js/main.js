@@ -1,5 +1,24 @@
 // 添加必要的样式
 const styles = `
+  .category-group {
+    margin-bottom: 2rem;
+  }
+
+  .category-title {
+    font-size: 1.25rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+    color: var(--foreground);
+    padding-left: 0.5rem;
+    border-left: 3px solid var(--primary);
+  }
+
+  .category-tools {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+  }
+
   body.light-theme {
     background-color: #f8fafc;
   }
@@ -772,16 +791,56 @@ document.addEventListener("DOMContentLoaded", () => {
       return
     }
 
+    const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+    const groupByCategory = settings.groupByCategory;
 
-    filteredTools.forEach((tool) => {
-      const toolCard = document.createElement("div")
-      toolCard.className = "tool-card"
-      toolCard.innerHTML = buildCardContent(tool);
-      toolsContainer.appendChild(toolCard)
+    if (groupByCategory) {
+      // 按分类分组展示
+      const groupedTools = {};
+      filteredTools.forEach(tool => {
+        const category = tool.category || '未分类';
+        if (!groupedTools[category]) {
+          groupedTools[category] = [];
+        }
+        groupedTools[category].push(tool);
+      });
 
-      // 判断是否需要标记为喜欢
-      markNavCardLikedOrNot(tool);
-    })
+      // 为每个分类创建一个容器
+      Object.entries(groupedTools).forEach(([category, tools]) => {
+        const categoryContainer = document.createElement('div');
+        categoryContainer.className = 'category-group';
+        
+        const categoryTitle = document.createElement('h2');
+        categoryTitle.className = 'category-title';
+        categoryTitle.textContent = category;
+        categoryContainer.appendChild(categoryTitle);
+
+        const toolsWrapper = document.createElement('div');
+        toolsWrapper.className = 'category-tools';
+
+        tools.forEach(tool => {
+          const toolCard = document.createElement("div");
+          toolCard.className = "tool-card";
+          toolCard.innerHTML = buildCardContent(tool);
+          toolsWrapper.appendChild(toolCard);
+          markNavCardLikedOrNot(tool);
+        });
+
+        categoryContainer.appendChild(toolsWrapper);
+        toolsContainer.appendChild(categoryContainer);
+      });
+    } else {
+      // 常规展示方式
+      filteredTools.forEach((tool) => {
+        const toolCard = document.createElement("div")
+        toolCard.className = "tool-card"
+        toolCard.innerHTML = buildCardContent(tool);
+        toolsContainer.appendChild(toolCard)
+
+        // 判断是否需要标记为喜欢
+        markNavCardLikedOrNot(tool);
+      })
+    }
 
 
     // 为每个工具卡片添加删除按钮事件监听
@@ -1065,6 +1124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("show-bookmarks").checked = settings.showBookmarks !== undefined ? settings.showBookmarks : true;
     document.getElementById("particle-density").value = settings.particleDensity || 50;
     document.getElementById("compact-view").checked = settings.compactView !== undefined ? settings.compactView : false;
+    document.getElementById("group-by-category").checked = settings.groupByCategory !== undefined ? settings.groupByCategory : false;
 
     // 应用卡片视图模式
     const mainContainer = document.querySelector('.main');
@@ -1080,12 +1140,14 @@ document.addEventListener("DOMContentLoaded", () => {
     const showBookmarks = document.getElementById("show-bookmarks").checked;
     const particleDensity = document.getElementById("particle-density").value;
     const compactView = document.getElementById("compact-view").checked;
+    const groupByCategory = document.getElementById("group-by-category").checked;
 
     const settings = {
       showClock,
       showBookmarks,
       particleDensity,
-      compactView
+      compactView,
+      groupByCategory
     };
 
     // 应用卡片视图模式
