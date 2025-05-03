@@ -434,13 +434,10 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   // Render tools
+  renderFavorites();
   renderTools()
 
-  // Setup event listeners
-  setupEventListeners()
-
-  // Initialize settings from storage
-  initSettings()
+  initSettings();
 
   let TOTAL_CATEGORY = [];
   // 从本地存储获取工具数据，如果不存在则使用默认数据
@@ -727,7 +724,46 @@ document.addEventListener("DOMContentLoaded", () => {
     getToolsData(currentToolsData => renderFilteredTools(currentToolsData))
   }
 
+  // 获取收藏的工具列表
+  function getFavorites() {
+    return new Promise((resolve) => {
+      getToolsData(currentTools => {
+        const favoriteTools = currentTools.filter(tool => tool.likes > 0);
+        resolve(favoriteTools);
+      });
+    });
+  }
+
+  // 检查工具是否已收藏
+  function isFavorited(tool) {
+    return tool.likes > 0;
+  }
+
+  // 渲染收藏区域
+  function renderFavorites() {
+    const favoritesContainer = document.getElementById('favorites-container');
+
+    getFavorites().then(favoriteTools => {
+      // 收藏区域，只显示头像和标题
+      favoritesContainer.innerHTML = favoriteTools.map(tool => {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'fav-tool-card';
+        cardElement.innerHTML = `
+              <a href="${tool.url}" target="_blank" data-link-tool-id="${tool.id}" data-tool-url="${tool.url}" class="fav-tool-card-content">
+                <img src="${tool.icon}" alt="${tool.title}" class="tool-icon-img">
+                ${tool.title}
+              </a>
+        `;
+        return cardElement.outerHTML;
+      }).join('');
+
+      // 重新绑定事件监听器
+      setupEventListeners();
+    });
+  }
+
   function buildCardContent(tool) {
+    const isFavorite = isFavorited(tool.id);
     return `
         <button class="delete-tool-btn" data-tool-id="${tool.id}">×</button>
         <div class="status-indicator ${tool.statusIndicator}"></div>
@@ -748,8 +784,8 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
           </div>
           <div class="tool-like">
-           <button class="btn btn-ghost like-btn" data-id="${tool.id}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+           <button class="btn btn-ghost like-btn ${isFavorite ? 'active' : ''}" data-id="${tool.id}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${isFavorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
             </button>
           </div>
         </div>
@@ -811,7 +847,7 @@ document.addEventListener("DOMContentLoaded", () => {
       Object.entries(groupedTools).forEach(([category, tools]) => {
         const categoryContainer = document.createElement('div');
         categoryContainer.className = 'category-group';
-        
+
         const categoryTitle = document.createElement('h2');
         categoryTitle.className = 'category-title';
         categoryTitle.textContent = category;
@@ -850,8 +886,14 @@ document.addEventListener("DOMContentLoaded", () => {
       })
     }
 
+    bindDeleteBtnListener();
+    bindCardClickListener();
+    bindLikedClickListener();
+  }
 
+  function bindDeleteBtnListener() {
     // 为每个工具卡片添加删除按钮事件监听
+    const toolsContainer = document.getElementById("tools-container")
     toolsContainer.querySelectorAll('.delete-tool-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         console.log('删除按钮被点击'); // Log for debugging purpose
@@ -859,11 +901,14 @@ document.addEventListener("DOMContentLoaded", () => {
         deleteTool(toolId);
       });
     });
+  }
 
-    // 绑定访问按钮点击事件
+  function bindCardClickListener() {
+    // 绑定访问按钮点击事件,执行访问次数+1
     document.querySelectorAll('[data-link-tool-id]').forEach(btn => {
       btn.addEventListener('click', function (e) {
         e.preventDefault();
+        console.log('访问按钮被点击'); // Log for debugging purpose
         const toolId = this.dataset.linkToolId;
         const url = this.dataset.toolUrl;
         getToolsData(tools => {
@@ -879,7 +924,9 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       });
     });
+  }
 
+  function bindLikedClickListener() {
     // Add event listeners to like buttons
     document.querySelectorAll(".like-btn").forEach((btn) => {
       btn.addEventListener("click", (e) => {
@@ -904,6 +951,8 @@ document.addEventListener("DOMContentLoaded", () => {
         }
         cacheSaveToolsData(currentToolsData).then(() => {
           markNavCardLikedOrNot(tool);
+          // 更新收藏区域内容
+          renderFavorites()
         })
       }
     })

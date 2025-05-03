@@ -353,3 +353,28 @@
 .edit-tool-btn:hover {
     color: #ff5e00;
 }
+
+.fav-tool-card-content {
+    background-color: transparent;
+    border-radius: .25rem;
+    box-sizing: border-box;
+    font-size: 1.125rem;
+    margin: .4375rem;
+    overflow: hidden;
+    position: relative;
+    text-align: center;
+    text-overflow: ellipsis;
+    transition: all .3s ease;
+    white-space: nowrap;
+    width: calc(20% - .875rem);
+    cursor: pointer;
+    display: inline-block;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: .0625rem;
+    outline: 0;
+}
+.fav-tool-icon-img {
+    width: 1.2em;
+    height: 1.2em;
+}
