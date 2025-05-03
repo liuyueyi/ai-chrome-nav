@@ -426,30 +426,11 @@ body:before {
 }
 
 .favorites-container {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
   gap: 1rem;
-  overflow-x: auto;
+  padding-top: 0.5rem;
   padding-bottom: 0.5rem;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary) transparent;
-}
-
-.favorites-container::-webkit-scrollbar {
-  height: 6px;
-}
-
-.favorites-container::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.favorites-container::-webkit-scrollbar-thumb {
-  background-color: var(--primary);
-  border-radius: 3px;
-}
-
-.favorites-container .tool-card {
-  min-width: 280px;
-  margin-bottom: 0;
 }
 
 .category-tab {

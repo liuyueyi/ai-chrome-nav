@@ -438,6 +438,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTools()
 
   initSettings();
+  updateSloganShow();
 
   let TOTAL_CATEGORY = [];
   // 从本地存储获取工具数据，如果不存在则使用默认数据
@@ -729,6 +730,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return new Promise((resolve) => {
       getToolsData(currentTools => {
         const favoriteTools = currentTools.filter(tool => tool.likes > 0);
+        // 按照sort字段进行排序
+        favoriteTools.sort((a, b) => b.sort - a.sort);
         resolve(favoriteTools);
       });
     });
@@ -744,13 +747,22 @@ document.addEventListener("DOMContentLoaded", () => {
     const favoritesContainer = document.getElementById('favorites-container');
 
     getFavorites().then(favoriteTools => {
+      // 如果没有收藏工具，则隐藏 “favorites-section”
+      if (favoriteTools.length === 0) {
+        console.log('没有收藏工具，隐藏 “favorites-section”');
+        document.getElementById('favorites-section').style.display = 'none';
+        return;
+      } else {
+        document.getElementById('favorites-section').style.display = 'block';
+      }
+
       // 收藏区域，只显示头像和标题
       favoritesContainer.innerHTML = favoriteTools.map(tool => {
         const cardElement = document.createElement('div');
         cardElement.className = 'fav-tool-card';
         cardElement.innerHTML = `
               <a href="${tool.url}" target="_blank" data-link-tool-id="${tool.id}" data-tool-url="${tool.url}" class="fav-tool-card-content">
-                <img src="${tool.icon}" alt="${tool.title}" class="tool-icon-img">
+                <img src="${tool.icon}" alt="${tool.title}" class="fav-tool-icon-img">
                 ${tool.title}
               </a>
         `;
@@ -1168,6 +1180,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("particle-density").value = settings.particleDensity || 50;
     document.getElementById("compact-view").checked = settings.compactView !== undefined ? settings.compactView : false;
     document.getElementById("group-by-category").checked = settings.groupByCategory !== undefined ? settings.groupByCategory : false;
+    document.getElementById("hide-slogan").checked = settings.hideSlogan!== undefined? settings.hideSlogan : false;
 
     // 应用卡片视图模式
     const mainContainer = document.querySelector('.main');
@@ -1184,13 +1197,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const particleDensity = document.getElementById("particle-density").value;
     const compactView = document.getElementById("compact-view").checked;
     const groupByCategory = document.getElementById("group-by-category").checked;
+    const hideSlogan = document.getElementById("hide-slogan").checked;
 
     const settings = {
       showClock,
       showBookmarks,
       particleDensity,
       compactView,
-      groupByCategory
+      groupByCategory,
+      hideSlogan
     };
 
     // 应用卡片视图模式
@@ -1204,8 +1219,17 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem('settings', JSON.stringify(settings));
     // Update particle density
     particles.updateDensity(particleDensity);
+    updateSloganShow();
     // 更新设置，重新渲染卡片列表
     renderTools();
+  }
+
+  function updateSloganShow() {
+    if (document.getElementById("hide-slogan").checked) {
+      document.getElementById("hero-section").style.display = "none";
+    } else {
+      document.getElementById("hero-section").style.display = "block";
+    }
   }
 
   function toggleTheme() {

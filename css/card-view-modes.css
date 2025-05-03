@@ -341,40 +341,48 @@
     color: rgb(41, 39, 39);
     font-size: 0.8rem;
 }
+
 .to_website:hover {
     color: #007bff;
 }
+
 .edit-tool-btn {
     cursor: pointer;
     text-decoration: none;
     color: rgb(41, 39, 39);
     font-size: 0.8rem;
 }
+
 .edit-tool-btn:hover {
     color: #ff5e00;
 }
 
-.fav-tool-card-content {
-    background-color: transparent;
-    border-radius: .25rem;
-    box-sizing: border-box;
-    font-size: 1.125rem;
-    margin: .4375rem;
-    overflow: hidden;
-    position: relative;
-    text-align: center;
-    text-overflow: ellipsis;
-    transition: all .3s ease;
-    white-space: nowrap;
-    width: calc(20% - .875rem);
-    cursor: pointer;
-    display: inline-block;
-    font-size: 1rem;
-    font-weight: 700;
-    letter-spacing: .0625rem;
-    outline: 0;
+.fav-tool-card {
+    max-width: 150px;
+    padding: 0.25rem;
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    transition: all 0.3s ease;
 }
+
+.fav-tool-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--primary);
+}
+
+.fav-tool-card-content {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    color: var(--foreground);
+}
+
 .fav-tool-icon-img {
-    width: 1.2em;
-    height: 1.2em;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
 }
