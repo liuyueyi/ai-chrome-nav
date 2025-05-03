@@ -13,6 +13,7 @@
   --gray-900: rgba(30, 41, 59, 0.9);
   --primary: #3b82f6;
   --primary-hover: #2563eb;
+  --primary-pre-hover: #98b3ec;
   --green: #10b981;
   --red: #ef4444;
   --border-color: rgba(30, 41, 59, 0.1);
@@ -474,8 +475,7 @@ body:before {
   margin: 0 auto;
 }
 
-
-/* Modal */
+/* 
 .modal {
   display: none;
   position: fixed;
@@ -501,7 +501,7 @@ body:before {
   max-width: 500px;
   max-height: 90vh;
   overflow-y: auto;
-}
+} */
 
 .modal-header {
   display: flex;
@@ -573,4 +573,322 @@ body:before {
   .tools-grid {
     grid-template-columns: 1fr;
   }
+}
+
+
+.category-group {
+  margin-bottom: 2rem;
+}
+
+.category-title {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: var(--foreground);
+  padding-left: 0.5rem;
+  border-left: 3px solid var(--primary);
+}
+
+.category-tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+body.light-theme {
+  background-color: #f8fafc;
+}
+
+select {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background-color: var(--card-bg);
+  color: var(--foreground);
+  font-size: 1rem;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+select:hover {
+  border-color: var(--gray-300);
+}
+
+select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px var(--primary-hover);
+}
+
+.dark-theme select {
+  background-color: rgba(15, 23, 42, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-theme select:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.dark-theme select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.light-theme .tool-card {
+  background-color: #ffffff;
+  border-color: #e5e7eb;
+  color: #1f2937;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.light-theme .tool-title {
+  color: #1f2937;
+}
+
+.light-theme .tool-description {
+  color: #6b7280;
+}
+
+.light-theme .tool-status {
+  color: #1f2937;
+}
+
+.light-theme .tool-stats {
+  color: #6b7280;
+}
+
+.light-theme .tool-category {
+  color: #6b7280;
+}
+
+.light-theme .delete-tool-btn {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.light-theme .delete-tool-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: rgb(239, 68, 68);
+}
+
+.light-theme .hero-title {
+  color: #1e293b;
+}
+
+.light-theme .hero-subtitle {
+  color: #64748b;
+}
+.add-tool-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.add-tool-btn:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.light-theme .add-tool-btn {
+  border: 2px dashed rgba(0, 0, 0, 0.1);
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.light-theme .add-tool-btn:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.7);
+}
+
+body.dark-theme {
+  background-color: #0f172a;
+  background-image: linear-gradient(to bottom, #0f172a, #1e293b);
+}
+
+.dark-theme .tool-card {
+  background-color: rgba(15, 23, 42, 0.6);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.dark-theme .tool-card:hover {
+  background-color: rgba(15, 23, 42, 0.8);
+}
+
+.delete-tool-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 18px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+
+
+.light-theme .btn-ghost {
+  color: #64748b;
+}
+
+.light-theme .btn-ghost:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: rgb(239, 68, 68);
+}
+
+.light-theme .particle-background {
+  opacity: 0.3;
+}
+
+.dark-theme .particle-background {
+  opacity: 0.6;
+}
+
+.light-theme .search-box {
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.light-theme .search-input {
+  color: #1e293b;
+}
+
+.light-theme .search-input::placeholder {
+  color: #94a3b8;
+}
+
+.light-theme .search-btn {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.light-theme .search-type-btn {
+  color: #64748b;
+}
+
+.light-theme .category-tab {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #64748b;
+}
+
+.light-theme .category-tab.active {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.tool-card:hover .delete-tool-btn {
+  display: flex;
+}
+
+.delete-tool-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: rgb(239, 68, 68);
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+}
+
+.modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: rgb(17, 24, 39);
+  border-radius: 12px;
+  padding: 24px;
+  width: 90%;
+  max-width: 500px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.light-theme .modal-content {
+  background: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.light-theme .modal h2 {
+  color: #1e293b;
+}
+
+.light-theme .form-group label {
+  color: #64748b;
+}
+
+.light-theme .form-group input,
+.light-theme .form-group textarea {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.02);
+  color: #1e293b;
+}
+
+.modal h2 {
+  margin: 0 0 20px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.tool-card {
+  position: relative;
 }

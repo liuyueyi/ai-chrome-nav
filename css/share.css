@@ -1,0 +1,135 @@
+.share-layout {
+  display: flex;
+  height: 100vh;
+  background: var(--bg-color);
+}
+
+/* 左侧分类导航栏样式 */
+.category-sidebar {
+  width: 240px;
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--border-color);
+  padding: 20px;
+  position: fixed;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.category-sidebar .logo {
+  display: flex;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.category-sidebar .logo-icon {
+  width: 32px;
+  height: 32px;
+  margin-right: 10px;
+}
+
+.category-sidebar .logo-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-color);
+}
+
+.category-nav {
+  margin-top: 20px;
+}
+
+.category-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.category-item {
+  margin-bottom: 10px;
+}
+
+.category-link {
+  display: block;
+  padding: 10px 15px;
+  color: var(--text-color);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  font-size: 1.2rem;
+}
+
+.category-item.active .category-link
+ {
+  background: var(--primary);
+  color: var(--background);
+  font-weight: 500;
+}
+.category-link:hover {
+  background: var(--primary-pre-hover);
+  color: var(--background);
+}
+
+/* 右侧内容区域样式 */
+.share-content {
+  flex: 1;
+  margin-left: 240px;
+  padding: 20px;
+}
+
+.share-tool-category {
+    position: fixed;
+    left: 80px;
+    top: 1.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+    background-color: rgba(16, 185, 129, 0.2);
+    color: var(--green);
+    text-align: center;
+}
+
+.content-header {
+  margin-bottom: 20px;
+}
+
+.content-header .search-box {
+  display: flex;
+  gap: 10px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.content-header .search-input {
+  flex: 1;
+  padding: 10px 15px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 16px;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
+.content-header .search-btn {
+  padding: 10px 20px;
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.content-header .search-btn:hover {
+  background: var(--primary-hover);
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .category-sidebar {
+    width: 200px;
+  }
+  
+  .share-content {
+    margin-left: 200px;
+  }
+}

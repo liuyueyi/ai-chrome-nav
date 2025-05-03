@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>共享大厅 - QuickNav Suite</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/share.css">
+</head>
+<body class="light-theme ">
+  <div class="app">
+    <canvas id="particle-canvas" class="particle-background"></canvas>
+    
+    <div class="share-layout">
+      <!-- 左侧分类导航栏 -->
+      <aside class="category-sidebar">
+        <div class="logo">
+          <img src="assets/icon.png" class="logo-icon" alt="AI Nav Logo">
+          <span class="logo-title">共享大厅</span>
+        </div>
+        <nav class="category-nav">
+          <ul class="category-list">
+            <li class="category-item active">
+              <a href="#all" class="category-link">全部</a>
+            </li>
+            <li class="category-item">
+              <a href="#ai" class="category-link">AI工具</a>
+            </li>
+            <li class="category-item">
+              <a href="#dev" class="category-link">开发工具</a>
+            </li>
+            <li class="category-item">
+              <a href="#design" class="category-link">设计工具</a>
+            </li>
+            <li class="category-item">
+              <a href="#productivity" class="category-link">效率工具</a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- 右侧内容区域 -->
+      <main class="share-content">
+        <div class="content-header">
+          <div class="search-box">
+            <input type="search" class="search-input" placeholder="搜索导航卡片...">
+            <button class="search-btn">搜索</button>
+          </div>
+        </div>
+
+        <div class="tools-grid" id="share-tools-container">
+          <!-- 导航卡片将在这里动态插入 -->
+        </div>
+      </main>
+    </div>
+  </div>
+  <link rel="stylesheet" href="css/card-view-modes.css">
+  <script src="js/particles.js"></script>
+  <script src="js/tools-data.js"></script>
+  <script src="js/kv.js"></script>
+  <script src="js/share.js"></script>
+</body>
+</html>
