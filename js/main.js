@@ -795,6 +795,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const groupByCategory = settings.groupByCategory;
 
     if (groupByCategory) {
+      toolsContainer.classList.add('tool-category-group');
+
       // 按分类分组展示
       const groupedTools = {};
       filteredTools.forEach(tool => {
@@ -823,13 +825,19 @@ document.addEventListener("DOMContentLoaded", () => {
           toolCard.className = "tool-card";
           toolCard.innerHTML = buildCardContent(tool);
           toolsWrapper.appendChild(toolCard);
-          markNavCardLikedOrNot(tool);
         });
 
         categoryContainer.appendChild(toolsWrapper);
         toolsContainer.appendChild(categoryContainer);
       });
+
+      filteredTools.forEach((tool) => {
+        // 判断是否需要标记为喜欢
+        markNavCardLikedOrNot(tool);
+      })
     } else {
+      toolsContainer.classList.remove('tool-category-group');
+
       // 常规展示方式
       filteredTools.forEach((tool) => {
         const toolCard = document.createElement("div")
@@ -1099,21 +1107,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const filteredTools = currentToolsData.filter(
         (tool) => tool.title.toLowerCase().includes(query) || tool.description.toLowerCase().includes(query),
       )
-
-      const toolsContainer = document.getElementById("tools-container")
-      toolsContainer.innerHTML = ""
-
-      if (filteredTools.length === 0) {
-        toolsContainer.innerHTML = '<div></div><div class="no-results">没有找到匹配的工具</div>'
-        return
-      }
-
-      filteredTools.forEach((tool) => {
-        const toolCard = document.createElement("div")
-        toolCard.className = "tool-card"
-        toolCard.innerHTML = buildCardContent(tool);
-        toolsContainer.appendChild(toolCard)
-      });
+      renderFilteredTools(filteredTools);
     })
   }
 
@@ -1161,6 +1155,8 @@ document.addEventListener("DOMContentLoaded", () => {
     localStorage.setItem('settings', JSON.stringify(settings));
     // Update particle density
     particles.updateDensity(particleDensity);
+    // 更新设置，重新渲染卡片列表
+    renderTools();
   }
 
   function toggleTheme() {

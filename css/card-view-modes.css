@@ -49,6 +49,10 @@
     gap: 1rem;
 }
 
+.tool-category-group {
+    display: contents;
+}
+
 .tool-card {
     position: relative;
     border: 1px solid var(--border-color);
@@ -88,6 +92,11 @@
     align-items: center;
     margin-bottom: 0.75rem;
     text-decoration: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 }
 
 .tool-icon {
@@ -227,7 +236,12 @@
 .compact-view .tool-header {
     flex-direction: row;
     margin-bottom: 0.25rem;
-    width: 100%;
+    width: 15vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
 }
 
 .compact-view .tool-icon {
