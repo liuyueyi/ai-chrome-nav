@@ -209,6 +209,30 @@ document.addEventListener("DOMContentLoaded", () => {
   handleCategorySelect();
 
 
+  // 分享导航卡片的模态框HTML
+  const shareToolModal = `
+  <div id="share-tool-modal" class="modal">
+    <div class="modal-content">
+      <h2>分享导航卡片</h2>
+      <div class="share-tool-info">
+        <div class="share-tool-header">
+          <img id="share-tool-icon" src="" alt="工具图标" class="share-tool-icon">
+          <h3 id="share-tool-title"></h3>
+        </div>
+        <p id="share-tool-description" class="share-tool-description"></p>
+        <div class="share-tool-meta">
+          <span id="share-tool-category"></span>
+          <span id="share-tool-url"></span>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" id="close-share-tool-modal-btn">取消</button>
+        <button type="button" class="btn btn-primary" id="confirm-share-tool-btn">确认分享</button>
+      </div>
+    </div>
+  </div>
+  `;
+
   // 添加导航卡片的模态框HTML
   const addToolModal = `
   <div id="add-tool-modal" class="modal">
@@ -385,6 +409,89 @@ document.addEventListener("DOMContentLoaded", () => {
     addToolForm.addEventListener('submit', handleAddToolSubmit);
   }
 
+  // 将分享模态框添加到body
+  document.body.insertAdjacentHTML('beforeend', shareToolModal);
+
+  // 打开分享工具模态框
+  function openShareToolModal(toolId) {
+    const modal = document.getElementById('share-tool-modal');
+    getToolsData(currentTools => {
+      const tool = currentTools.find(t => t.id === toolId);
+      if (tool) {
+        document.querySelector('.share-tool-info').setAttribute('data-tool-id', toolId);
+        document.getElementById('share-tool-icon').src = tool.icon;
+        document.getElementById('share-tool-title').textContent = tool.title;
+        document.getElementById('share-tool-description').textContent = tool.description;
+        document.getElementById('share-tool-category').textContent = tool.category;
+        document.getElementById('share-tool-url').textContent = tool.url;
+        modal.classList.add('active');
+      }
+    });
+  }
+
+  // 关闭分享工具模态框
+  function closeShareToolModal() {
+    document.getElementById('share-tool-modal').classList.remove('active');
+  }
+
+  // 添加关闭按钮事件监听
+  const closeShareBtn = document.getElementById('close-share-tool-modal-btn');
+  if (closeShareBtn) {
+    closeShareBtn.addEventListener('click', closeShareToolModal);
+  }
+
+  // 添加确认分享按钮事件监听
+  const confirmShareBtn = document.getElementById('confirm-share-tool-btn');
+  if (confirmShareBtn) {
+    confirmShareBtn.addEventListener('click', () => {
+      getToolsData(currentTools => {
+        const toolId = document.querySelector('.share-tool-info').getAttribute('data-tool-id');
+        const tool = currentTools.find(t => t.id === toolId);
+        console.log('准备分享的工具:', toolId, tool); // 打印工具的详细信息，包括icon、title、description、category、url等
+        if (tool) {
+          fetch('http://localhost:8080/api/nav/submit', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'nav-id': 'iejaflkdaoituerasdf', // admin超级用户
+            },
+            body: JSON.stringify({
+              title: tool.title,
+              icon: tool.icon,
+              intro: tool.description,
+              category: tool.category,
+              url: tool.url,
+              author: 'HuHui',
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            console.log('分享请求响应:', data); // 打印响应的JS
+            if (data.status.code != '200') {
+              console.error('分享失败:', data.status.msg);
+              alert('分享失败：' + data.status.msg);
+              return;
+            }
+            alert('分享成功！');
+            closeShareToolModal();
+          })
+          .catch(error => {
+            console.error('分享失败:', error);
+            alert('分享失败，请稍后重试！');
+          });
+        }
+      });
+    });
+  }
+
+  // 为所有分享按钮添加点击事件
+  document.addEventListener('click', function(e) {
+    if (e.target.closest('.share-btn')) {
+      const toolId = e.target.closest('.share-btn').getAttribute('data-id');
+      openShareToolModal(toolId);
+    }
+  });
+
   // 删除工具
   function deleteTool(toolId) {
     console.log('准备删除导航信息:', toolId);
@@ -478,6 +585,12 @@ document.addEventListener("DOMContentLoaded", () => {
           <div class="tool-like">
            <button class="btn btn-ghost like-btn ${isFavorite ? 'active' : ''}" data-id="${tool.id}">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="${isFavorite ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path></svg>
+            </button>
+          </div>
+
+          <div class="tool-share">
+           <button class="btn btn-ghost share-btn" data-id="${tool.id}">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
             </button>
           </div>
         </div>

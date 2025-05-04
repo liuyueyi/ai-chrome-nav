@@ -64,28 +64,18 @@ function createToolCard(tool) {
 
 // 获取共享导航数据
 async function getSharedTools() {
-    // 这里可以替换为实际的API调用
-    return [
-        {
-            id: 'shared-1',
-            name: 'AI智能体',
-            description: '多模态AI智能体，支持图像、文本等多种输入。',
-            icon: 'public/placeholder.svg',
-            category: 'ai',
-            views: 1000,
-            like: 0,
-        },
-        {
-            id: 'shared-2',
-            name: 'Video Sora',
-            description: 'OpenAI开发的AI视频生成工具。',
-            icon: 'public/placeholder.svg',
-            category: 'ai',
-            views: 12,
-            like: 1,
-        },
-        // 更多示例数据...
-    ];
+    try {
+        const response = await fetch('https://story.hhui.top/');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data['result'];
+    } catch (error) {
+        console.error('获取导航卡片数据失败:', error);
+        // 返回空数组作为默认值
+        return [];
+    }
 }
 
 let TOTAL_CATEGORY = [];
