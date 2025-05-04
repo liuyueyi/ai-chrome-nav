@@ -453,7 +453,7 @@ document.addEventListener("DOMContentLoaded", () => {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'nav-id': 'iejaflkdaoituerasdf', // admin超级用户
+              'nav-id': 'iejaflkdaoituerasdf', // fixme 这里需要调整一下 admin超级用户
             },
             body: JSON.stringify({
               title: tool.title,
@@ -468,16 +468,14 @@ document.addEventListener("DOMContentLoaded", () => {
           .then(data => {
             console.log('分享请求响应:', data); // 打印响应的JS
             if (data.status.code != '200') {
-              console.error('分享失败:', data.status.msg);
-              alert('分享失败：' + data.status.msg);
+              toast.error('分享失败：' + data.status.msg, 1500);
               return;
             }
-            alert('分享成功！');
+            toast.success('分享成功！', 1500);
             closeShareToolModal();
           })
           .catch(error => {
-            console.error('分享失败:', error);
-            alert('分享失败，请稍后重试！');
+            toast.error('分享失败：' + error, 1500);
           });
         }
       });

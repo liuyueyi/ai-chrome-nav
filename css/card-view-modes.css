@@ -478,3 +478,13 @@
     border-radius: 8px;
     object-fit: cover;
 }
+
+.tool-share {
+    position: fixed;
+    right: 0;
+    top: 4rem;
+}
+
+.compact-view .tool-share {
+    right: 0.5rem;
+}
