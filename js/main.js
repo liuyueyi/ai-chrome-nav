@@ -905,12 +905,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setupEventListeners() {
     // Bookmarks and History buttons
-    const bookmarksBtn = document.getElementById("bookmarks-btn");
+    // const bookmarksBtn = document.getElementById("bookmarks-btn");
     const historyBtn = document.getElementById("history-btn");
 
-    bookmarksBtn.addEventListener("click", () => {
-      chrome.tabs.create({ url: "chrome://bookmarks/" });
-    });
+    // bookmarksBtn.addEventListener("click", () => {
+    //   chrome.tabs.create({ url: "chrome://bookmarks/" });
+    // });
 
     historyBtn.addEventListener("click", () => {
       chrome.tabs.create({ url: "chrome://history/" });

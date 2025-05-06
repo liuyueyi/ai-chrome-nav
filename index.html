@@ -149,18 +149,54 @@
     </div>
   </div>
 
+  <!-- 书签模态框 -->
+  <div class="modal" id="bookmarks-modal">
+    <div class="modal-content bookmarks-layout">
+      <div class="modal-header">
+        <h2>浏览器书签</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="bookmarks-sidebar">
+          <div class="bookmarks-tree" id="bookmarks-tree">
+            <!-- 书签文件夹树形结构将在这里动态插入 -->
+          </div>
+        </div>
+        <div class="bookmarks-main">
+          <div class="bookmarks-container" id="bookmarks-container">
+            <!-- 书签列表将在这里动态插入 -->
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <div class="btn-group">
+          <button class="btn btn-ghost" id="refresh-bookmarks">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 12a9 9 0 0 0-9-9"></path><path d="M3 12a9 9 0 0 0 9 9"></path><path d="M3 12h18"></path><path d="m12 7 5 5-5 5"></path></svg>
+            <span>刷新</span>
+          </button>
+          <button class="btn btn-ghost" id="import-all-bookmarks">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+            <span>全部导入</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- 视图切换按钮 -->
   <button id="view-toggle-btn" class="floating-btn">
     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-grid"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
   </button>
 
   <link rel="stylesheet" href="css/card-view-modes.css">
+  <link rel="stylesheet" href="css/bookmarks.css">
   <script src="js/particles.js"></script>
   <script src="js/clock.js"></script>
   <script src="js/view-mode.js"></script>
   <script src="js/toast.js"></script>
   <script src="js/kv.js"></script>
   <script src="js/server.js"></script>
+  <script src="js/bookmarks.js"></script>
   <script src="js/main.js"></script>
 </body>
 </html>
