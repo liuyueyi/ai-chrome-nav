@@ -124,6 +124,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 // 保存更新后的工具列表
                 cacheSaveToolsData(tools).then(() => {
                     console.error('工具已保存');
+                    toast.success('已更新到导航卡~')
                 });
                 // 关闭弹窗
                 window.close();

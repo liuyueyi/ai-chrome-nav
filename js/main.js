@@ -20,10 +20,11 @@ function initTheme() {
 // 页面加载时初始化主题
 document.addEventListener("DOMContentLoaded", () => {
   // 共享按钮点击事件
-  document.getElementById('share-btn').addEventListener('click', function() {
+  document.getElementById('share-btn').addEventListener('click', function () {
     window.location.href = 'share.html';
   });
 
+  initDevId();
   initTheme();
 
   class ParticleSystem {
@@ -224,6 +225,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <span id="share-tool-category"></span>
           <span id="share-tool-url"></span>
         </div>
+        <div>
+          <span id="share-num">分享卡片数：</span>
+        </div>
       </div>
       <div class="form-actions">
         <button type="button" class="btn btn-ghost" id="close-share-tool-modal-btn">取消</button>
@@ -409,21 +413,37 @@ document.addEventListener("DOMContentLoaded", () => {
     addToolForm.addEventListener('submit', handleAddToolSubmit);
   }
 
+
+  // ---------------------------------------------------------- 分享相关代码 ---------------------------------------------
+
   // 将分享模态框添加到body
   document.body.insertAdjacentHTML('beforeend', shareToolModal);
 
   // 打开分享工具模态框
-  function openShareToolModal(toolId) {
+  function openShareToolModal(toolId, category) {
     const modal = document.getElementById('share-tool-modal');
     getToolsData(currentTools => {
-      const tool = currentTools.find(t => t.id === toolId);
-      if (tool) {
-        document.querySelector('.share-tool-info').setAttribute('data-tool-id', toolId);
-        document.getElementById('share-tool-icon').src = tool.icon;
-        document.getElementById('share-tool-title').textContent = tool.title;
-        document.getElementById('share-tool-description').textContent = tool.description;
-        document.getElementById('share-tool-category').textContent = tool.category;
-        document.getElementById('share-tool-url').textContent = tool.url;
+      if (toolId) {
+        const tool = currentTools.find(t => t.id === toolId);
+        if (tool) {
+          document.querySelector('.share-tool-info').setAttribute('data-tool-id', toolId);
+          document.getElementById('share-tool-icon').src = tool.icon;
+          document.getElementById('share-tool-icon').style.display = 'inline-block';
+          document.getElementById('share-tool-title').textContent = tool.title;
+          document.getElementById('share-tool-description').textContent = tool.description;
+          document.getElementById('share-tool-category').textContent = tool.category;
+          document.getElementById('share-tool-url').textContent = tool.url;
+          document.getElementById('share-num').style.display = 'none';
+          modal.classList.add('active');
+        }
+      } else {
+        const categoryDiv = document.getElementById('share-tool-category');
+        categoryDiv.textContent = '共享分组:' + category;
+        categoryDiv.setAttribute('data-category', category);
+        document.getElementById('share-tool-icon').style.display = 'none';
+        const shareNum = document.getElementById('share-num')
+        shareNum.style.display = 'block';
+        shareNum.textContent = '预计分享导航：' + currentTools.filter(t => t.category === category).length + '个';
         modal.classList.add('active');
       }
     });
@@ -444,18 +464,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const confirmShareBtn = document.getElementById('confirm-share-tool-btn');
   if (confirmShareBtn) {
     confirmShareBtn.addEventListener('click', () => {
-      getToolsData(currentTools => {
+      getToolsData(async currentTools => {
         const toolId = document.querySelector('.share-tool-info').getAttribute('data-tool-id');
-        const tool = currentTools.find(t => t.id === toolId);
-        console.log('准备分享的工具:', toolId, tool); // 打印工具的详细信息，包括icon、title、description、category、url等
-        if (tool) {
-          fetch('http://localhost:8080/api/nav/submit', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'nav-id': 'iejaflkdaoituerasdf', // fixme 这里需要调整一下 admin超级用户
-            },
-            body: JSON.stringify({
+        if (toolId) {
+          const tool = currentTools.find(t => t.id === toolId);
+          console.log('准备分享的工具:', toolId, tool); // 打印工具的详细信息，包括icon、title、description、category、url等
+          if (!tool) {
+            toast.warning('未找到需要分享的卡片!');
+            closeShareToolModal();
+            return;
+          }
+          try {
+            const ans = await postJson('/api/nav/submit', {
               title: tool.title,
               icon: tool.icon,
               intro: tool.description,
@@ -463,32 +483,62 @@ document.addEventListener("DOMContentLoaded", () => {
               url: tool.url,
               author: 'HuHui',
             })
-          })
-          .then(response => response.json())
-          .then(data => {
-            console.log('分享请求响应:', data); // 打印响应的JS
-            if (data.status.code != '200') {
-              toast.error('分享失败：' + data.status.msg, 1500);
-              return;
+            if (ans) {
+              toast.success('分享成功');
+              closeShareToolModal();
+            } else {
+              toast.error('分享失败，请稍后再试');
             }
-            toast.success('分享成功！', 1500);
+          } catch (e) {
+            console.error('分享失败:', e);
+            toast.error('分享失败:' + e.message);
             closeShareToolModal();
-          })
-          .catch(error => {
-            toast.error('分享失败：' + error, 1500);
-          });
+          }
+        } else {
+          // 分类的方式进行分享
+          const category = document.getElementById('share-tool-category').getAttribute('data-category');
+          // 从 currentTools 中过滤出分组对应的导航数据
+          const params = []
+          for (var tool of currentTools) {
+            if (tool.category == category) {
+              params.push({
+                title: tool.title,
+                icon: tool.icon,
+                intro: tool.description,
+                category: tool.category,
+                url: tool.url,
+                author: 'HuHui',
+              })
+            }
+          }
+
+          try {
+            const ans = await postJson('/api/nav/batchSubmit', params);
+            if (ans) {
+              toast.success('分享成功');
+              closeShareToolModal();
+            } else {
+              toast.error('分享失败，请稍后再试');
+            }
+          } catch (e) {
+            console.error('分享失败:', e);
+            toast.error('分享失败:' + e.message);
+            closeShareToolModal();
+          }
         }
       });
     });
   }
 
   // 为所有分享按钮添加点击事件
-  document.addEventListener('click', function(e) {
+  document.addEventListener('click', function (e) {
     if (e.target.closest('.share-btn')) {
       const toolId = e.target.closest('.share-btn').getAttribute('data-id');
-      openShareToolModal(toolId);
+      openShareToolModal(toolId, null);
     }
   });
+
+  // ---------------------------------------------------------- 分享相关代码 - 结束 ---------------------------------------------
 
   // 删除工具
   function deleteTool(toolId) {
@@ -608,9 +658,15 @@ document.addEventListener("DOMContentLoaded", () => {
             </button>
           </div>
 
+          <button class="btn btn-ghost share-btn" data-id="${tool.id}">
           <div class="tool-share">
-           <button class="btn btn-ghost share-btn" data-id="${tool.id}">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="18" cy="5" r="3"></circle>
+                <circle cx="6" cy="12" r="3"></circle>
+                <circle cx="18" cy="19" r="3"></circle>
+                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+              </svg>
             </button>
           </div>
         </div>
@@ -673,10 +729,25 @@ document.addEventListener("DOMContentLoaded", () => {
         const categoryContainer = document.createElement('div');
         categoryContainer.className = 'category-group';
 
-        const categoryTitle = document.createElement('h2');
-        categoryTitle.className = 'category-title';
-        categoryTitle.textContent = category;
-        categoryContainer.appendChild(categoryTitle);
+        const catTitle = document.createElement('div');
+        catTitle.className = 'category-title'
+        catTitle.innerHTML = `
+          <h2 >${category}</h2>
+          <button class="btn btn-ghost category-share" data-category="${category}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+          </button>
+          <button class="btn btn-ghost category-download" data-category="${category}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </button>
+          `
+        categoryContainer.appendChild(catTitle);
+
 
         const toolsWrapper = document.createElement('div');
         toolsWrapper.className = 'category-tools';
@@ -714,6 +785,7 @@ document.addEventListener("DOMContentLoaded", () => {
     bindDeleteBtnListener();
     bindCardClickListener();
     bindLikedClickListener();
+    bindShareClickListener();
   }
 
   function bindDeleteBtnListener() {
@@ -759,6 +831,24 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault()
         const toolId = btn.getAttribute("data-id")
         toggleLike(toolId)
+      })
+    })
+  }
+
+  function bindShareClickListener() {
+    document.querySelectorAll(".category-share").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault()
+        const category = btn.getAttribute("data-category")
+        openShareToolModal(null, category);
+      })
+    })
+
+    document.querySelectorAll(".category-download").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault()
+        const category = btn.getAttribute("data-category")
+        exportToolsByCategory(category)
       })
     })
   }
@@ -994,7 +1084,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("particle-density").value = settings.particleDensity || 50;
     document.getElementById("compact-view").checked = settings.compactView !== undefined ? settings.compactView : false;
     document.getElementById("group-by-category").checked = settings.groupByCategory !== undefined ? settings.groupByCategory : false;
-    document.getElementById("hide-slogan").checked = settings.hideSlogan!== undefined? settings.hideSlogan : false;
+    document.getElementById("hide-slogan").checked = settings.hideSlogan !== undefined ? settings.hideSlogan : false;
 
     // 应用卡片视图模式
     const mainContainer = document.querySelector('.main');
@@ -1097,4 +1187,134 @@ document.addEventListener("DOMContentLoaded", () => {
       openAddToolModal(toolId);
     }
   });
+
+  function exportToolsByCategory(category) {
+    cacheGetToolsData().then(tools => {
+      const filteredTools = tools.filter(tool => tool.category === category);
+      if (filteredTools.length > 0) {
+        const blob = new Blob([JSON.stringify(filteredTools, null, 2)], { type: 'application/json' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `quicknav-${category}-data.json`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+        toast.success('导出成功！');
+      } else {
+        toast.error('没有找到该分类的导航数据！');
+      }
+    })
+  }
+
+  // 导出事件
+  function exportTools() {
+    // 导出数据功能
+    document.getElementById('export-data').addEventListener('click', async () => {
+      try {
+        // 获取所有导航卡片数据
+        const tools = await cacheGetToolsData();
+        console.log('需要到处的数据是:', tools);
+
+        // 创建Blob对象
+        const blob = new Blob([JSON.stringify(tools, null, 2)], { type: 'application/json' });
+
+        // 创建下载链接
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'quicknav-data.json';
+
+        // 触发下载
+        document.body.appendChild(a);
+        a.click();
+
+        // 清理
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        toast.success('数据导出成功！');
+      } catch (error) {
+        console.error('导出数据失败:', error);
+        toast.error('导出数据失败，请重试');
+      }
+    });
+  }
+  exportTools();
+
+  // 导入事件
+  function importTools() {
+    const importBtn = document.getElementById('import-data');
+    const fileInput = document.getElementById('import-file');
+
+    importBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const reader = new FileReader();
+        reader.onload = async (e) => {
+          try {
+            const importedData = JSON.parse(e.target.result);
+
+            // 验证导入的数据格式
+            if (!Array.isArray(importedData)) {
+              throw new Error('导入的数据格式不正确');
+            }
+
+            // 验证每个工具的必要字段
+            const isValidTool = (tool) => {
+              return tool.title && tool.url && tool.category;
+            };
+
+            if (!importedData.every(isValidTool)) {
+              throw new Error('导入的数据缺少必要字段');
+            }
+
+            // 获取当前的工具数据
+            const currentTools = await cacheGetToolsData();
+
+            // 合并数据，根据url去重
+            const mergedTools = [...currentTools];
+            let addedCount = 0;
+
+            for (const tool of importedData) {
+              const isDuplicate = currentTools.some(t => t.url === tool.url);
+              if (!isDuplicate) {
+                mergedTools.push(tool);
+                addedCount++;
+              }
+            }
+
+            // 保存合并后的数据
+            await cacheSaveToolsData(mergedTools);
+
+            // 重新渲染工具列表
+            renderTools();
+
+            // 显示成功消息
+            toast.success(`成功导入 ${addedCount} 个导航卡片！`);
+          } catch (error) {
+            console.error('解析导入数据失败:', error);
+            toast.error('导入失败：' + error.message);
+          }
+        };
+
+        reader.readAsText(file);
+      } catch (error) {
+        console.error('读取文件失败:', error);
+        toast.error('读取文件失败，请重试');
+      }
+
+      // 清空文件输入框，允许重复导入同一个文件
+      fileInput.value = '';
+    });
+  }
+  importTools();
+
 })

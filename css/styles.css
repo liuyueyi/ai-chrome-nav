@@ -378,14 +378,14 @@ body:before {
   margin-bottom: 1rem;
 }
 
-.category-title {
+/* .category-title {
   font-size: 1.25rem;
   font-weight: 500;
   color: var(--foreground);
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid var(--border-color);
-}
+} */
 
 #tools-container {
   /* display: grid; */
@@ -587,6 +587,20 @@ body:before {
   color: var(--foreground);
   padding-left: 0.5rem;
   border-left: 3px solid var(--primary);
+  display: flex;
+}
+
+.category-share {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-left: 1rem;
+}
+
+.category-download {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .category-tools {

@@ -3,28 +3,24 @@ document.addEventListener('DOMContentLoaded', function () {
     //   initParticles();
     initDevId();
     loadSharedTools();
-});
 
-const HOST = "http://localhost:8080"
+    // 为logo添加点击事件，点击后返回首页
+    const logo = document.querySelector('.logo');
+    if (logo) {
+        logo.style.cursor = 'pointer'; // 添加手型光标样式
+        logo.addEventListener('click', () => {
+            window.location.href = 'index.html';
+        });
+    }
+});
 
 
 async function fetchTotals() {
     // 获取全部信息，包含分类 + 所有工具
     try {
-        const response = await fetch(`${HOST}/api/nav/all`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'nav-id': getDevId(), // fixme 这里需要调整一下 admin超级用户
-            },
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data['result'];
+        return await get('/api/nav/all', null)
     } catch (error) {
-        console.error('获取导航卡片数据失败:', error);
+        toast.error('获取导航卡片数据失败:' + error);
         // 返回空数组作为默认值
         return {
             categoryList: [],
@@ -38,56 +34,25 @@ async function fetchTotals() {
 // 获取共享导航数据
 async function fetchSharedTools(category, search, page) {
     try {
-        let params = '';
-        if (category && category !== 'all') {
-            params += `category=${category}&`;
+        const params = {
+            key: search && search!== '' ? search : null,
+            category: category && category !== 'all' ? category : null,
+            page: page ? page : 1
         }
-        if (search && search !== '') {
-            search = search.trim();
-            params += `key=${search}&`;
-        }
-        if (page) {
-            params += `page=${page}&`;
-        }
-        params += '1=1'
-        const response = await fetch(`${HOST}/api/nav/list?${params}`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'nav-id': getDevId(), // fixme 这里需要调整一下 admin超级用户
-            },
-        });
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data['result'];
+        return await get('/api/nav/list', params)
     } catch (error) {
-        console.error('获取导航卡片数据失败:', error);
+        toast.error('获取导航卡片数据失败:' + error);
         // 返回空数组作为默认值
         return [];
     }
 }
 
 async function execToolClicked(toolId, liked, clicked) {
-    // 执行卡片计数相关的更新逻辑
-    const response = await fetch(`${HOST}/api/nav/update`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'nav-id': getDevId(), // fixme 这里需要调整一下 admin超级用户
-        },
-        body: JSON.stringify({
-            id: toolId,
-            liked: liked,
-            clicked: clicked
-        })
+    return await postJson('/api/nav/update', {
+        id: toolId,
+        liked: liked,
+        clicked: clicked    
     })
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    return data['result'];
 }
 
 // 加载共享导航卡片
@@ -251,6 +216,7 @@ function createToolCard(tool) {
     </div>
   `;
 
+
     // 添加导入按钮点击事件
     const importBtn = card.querySelector('.import-btn');
     importBtn.addEventListener('click', (e) => {
@@ -410,7 +376,7 @@ function bindImportClickListener(tool) {
             // 正好是这个
             const ans = await execToolClicked(tool.toolId, 1, null);
             if (ans) {
-                element.querySelector('.like-stat span').textContent = (tool.likes || 0) + 1;
+                element.querySelector('.like-stat span').textContent = (tool.likeCnt || 0) + 1;
             }
         }
     });
@@ -458,8 +424,9 @@ function openImportToolModal(tool) {
         url: form.url.value,
         icon: form.icon.value,
         category: form.category.value,
-        likes: tool.likeCnt,
+        likes: 0,
         views: 0,
+        likeCnt: tool.likeCnt,
         toolId: tool.id,
         id: new Date().getTime().toString()
     });

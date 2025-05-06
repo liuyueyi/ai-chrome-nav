@@ -4,7 +4,7 @@ function cacheGetToolsData() {
         chrome.storage.local.get('toolsData', (result) => {
             let ans = result['toolsData']
             ans = ans ? JSON.parse(ans) : []
-            console.warn('返回的内容是:', JSON.stringify(ans))
+            // console.warn('返回的内容是:', JSON.stringify(ans))
             // 将ans根据sort进行排序
             ans = ans.sort((a, b) => (b.sort || 0) - (a.sort || 0))
             resolve(ans);
@@ -71,6 +71,18 @@ function initDevId() {
         });
     });
 }
+
+/**
+ * 同步方式获取设备id
+ * @returns 
+ */
+async function syncGetDevId() {
+    if (DEV_ID) {
+        return DEV_ID;
+    }
+    await initDevId();
+}
+
 /**
  * 获取设备id
  * @returns 
