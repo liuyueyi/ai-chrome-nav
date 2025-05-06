@@ -495,7 +495,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('准备删除导航信息:', toolId);
     if (confirm('确定要删除这个导航吗？')) {
       getToolsData(currentTools => {
-        const updatedTools = currentTools.filter(tool => tool.id !== toolId);
+        const updatedTools = currentTools.filter(tool => tool.id != toolId);
+        console.log('删除后的工具列表:', updatedTools);
         cacheSaveToolsData(updatedTools).then(() => {
           renderTools();
         })
@@ -524,7 +525,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 检查工具是否已收藏
   function isFavorited(tool) {
-    return tool.likes > 0;
+    if (!tool) return false;
+    return (tool.likes || 0) > 0;
   }
 
   // 渲染收藏区域
@@ -718,7 +720,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 为每个工具卡片添加删除按钮事件监听
     const toolsContainer = document.getElementById("tools-container")
     toolsContainer.querySelectorAll('.delete-tool-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+      btn.addEventListener('click', (e) => {
         e.preventDefault();
         console.log('删除按钮被点击'); // Log for debugging purpose
         const toolId = btn.getAttribute('data-tool-id');

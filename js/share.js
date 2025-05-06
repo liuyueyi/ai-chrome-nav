@@ -1,19 +1,215 @@
 // 初始化粒子背景
 document.addEventListener('DOMContentLoaded', function () {
     //   initParticles();
+    initDevId();
     loadSharedTools();
 });
+
+const HOST = "http://localhost:8080"
+
+
+async function fetchTotals() {
+    // 获取全部信息，包含分类 + 所有工具
+    try {
+        const response = await fetch(`${HOST}/api/nav/all`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'nav-id': getDevId(), // fixme 这里需要调整一下 admin超级用户
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data['result'];
+    } catch (error) {
+        console.error('获取导航卡片数据失败:', error);
+        // 返回空数组作为默认值
+        return {
+            categoryList: [],
+            itemList: {
+                list: []
+            }
+        };
+    }
+}
+
+// 获取共享导航数据
+async function fetchSharedTools(category, search, page) {
+    try {
+        let params = '';
+        if (category && category !== 'all') {
+            params += `category=${category}&`;
+        }
+        if (search && search !== '') {
+            search = search.trim();
+            params += `key=${search}&`;
+        }
+        if (page) {
+            params += `page=${page}&`;
+        }
+        params += '1=1'
+        const response = await fetch(`${HOST}/api/nav/list?${params}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'nav-id': getDevId(), // fixme 这里需要调整一下 admin超级用户
+            },
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data['result'];
+    } catch (error) {
+        console.error('获取导航卡片数据失败:', error);
+        // 返回空数组作为默认值
+        return [];
+    }
+}
+
+async function execToolClicked(toolId, liked, clicked) {
+    // 执行卡片计数相关的更新逻辑
+    const response = await fetch(`${HOST}/api/nav/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'nav-id': getDevId(), // fixme 这里需要调整一下 admin超级用户
+        },
+        body: JSON.stringify({
+            id: toolId,
+            liked: liked,
+            clicked: clicked
+        })
+    })
+    if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const data = await response.json();
+    return data['result'];
+}
 
 // 加载共享导航卡片
 async function loadSharedTools() {
     const container = document.getElementById('share-tools-container');
-    const sharedTools = await getSharedTools();
+    const sharedTools = await fetchTotals();
+    console.log('获取到的卡片列表:', sharedTools);
 
-    sharedTools.forEach(tool => {
+    // 更新左侧边的分类信息
+    const categoryList = document.getElementById('category-list');
+    categoryList.innerHTML = '';
+    const categoryMap = {};
+    sharedTools.categoryList.forEach(category => {
+        if (!categoryMap[category]) {
+            categoryMap[category] = {
+                category: category,
+                count: 0
+            };
+        }
+    })
+    const categoryItem = document.createElement('div');
+    categoryItem.className = 'category-item';
+    categoryItem.innerHTML = `
+        <li class="category-item active">
+          <a href="#all" class="category-link">
+            全部
+          </a>
+        </li>
+      `;
+    categoryList.appendChild(categoryItem);
+    Object.values(categoryMap).forEach(category => {
+        const categoryItem = document.createElement('div');
+        categoryItem.className = 'category-item';
+        categoryItem.innerHTML = `
+            <li class="category-item">
+            <a href="#${category.category}" class="category-link">
+                ${category.category}
+            </a>
+            </li>
+        `;
+        categoryList.appendChild(categoryItem);
+    })
+    bindCategoryChooseListener();
+
+    sharedTools.itemList.list.forEach(tool => {
         const card = createToolCard(tool);
         container.appendChild(card);
     });
 }
+
+function bindCategoryChooseListener() {
+    // 分类切换
+    const categoryLinks = document.querySelectorAll('.category-link');
+    console.log('进入这里了!');
+    categoryLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            // 移除其他分类的active类
+            categoryLinks.forEach(l => {
+                l.parentElement.classList.remove('active');
+            });
+
+            // 添加当前分类的active类
+            link.parentElement.classList.add('active');
+
+            // 获取分类ID并过滤工具
+            const category = link.getAttribute('href').substring(1);
+            filterToolsByCategory(category);
+        });
+    });
+}
+
+function getChooseCategory() {
+    return document.querySelector('.category-item .active').querySelector('.category-link').getAttribute('href').substring(1);
+}
+
+
+// 根据分类过滤工具
+async function filterToolsByCategory(category) {
+    const container = document.getElementById('share-tools-container');
+    const tools = await fetchSharedTools(category, null, 1);
+    console.log('过滤的卡片列表:', tools);
+
+    container.innerHTML = '';
+    if (tools.list.length === 0) {
+        container.innerHTML = `<div></div><div class="no-results">没有找到相关的工具</div>`;
+        return;
+    }
+    tools.list.forEach(tool => {
+        const card = createToolCard(tool);
+        container.appendChild(card);
+    });
+}
+
+async function filterToolsBySearch(query) {
+    const container = document.getElementById('share-tools-container');
+    const category = getChooseCategory();
+    const tools = await fetchSharedTools(category, query, 1);
+    console.log('过滤的卡片列表:', tools);
+
+    container.innerHTML = '';
+    if (tools.list.length === 0) {
+        container.innerHTML = `<div></div><div class="no-results">没有找到相关的工具</div>`;
+        return;
+    }
+    tools.list.forEach(tool => {
+        const card = createToolCard(tool);
+        container.appendChild(card);
+    });
+}
+
+function bindSearchListener() {
+    // Search functionality
+    const searchInput = document.querySelector(".search-input")
+    searchInput.addEventListener("input", (e) => {
+        // 对于检索本地卡片时，根据输入内容进行过滤
+        const query = searchInput.value.toLowerCase().trim();
+        filterToolsBySearch(query)
+    })
+}
+bindSearchListener();
 
 // 创建导航卡片
 function createToolCard(tool) {
@@ -22,11 +218,11 @@ function createToolCard(tool) {
 
     card.innerHTML = `
     <div class="tool-icon">
-      <img src="${tool.icon}" alt="${tool.name}" width="54" height="54" class="tool-icon-img">
+      <img src="${tool.icon || '/public/placeholder-logo.svg'}" alt="${tool.name}" width="54" height="54" class="tool-icon-img">
     </div>
     <div class="tool-info">
-      <h3 class="tool-name">${tool.name}</h3>
-      <p class="tool-desc">${tool.description}</p>
+      <h3 class="tool-name">${tool.title}</h3>
+      <p class="tool-desc">${tool.desc}</p>
     </div>
         <div class="share-tool-category green">${tool.category}</div>
       <div class="tool-like">
@@ -37,13 +233,13 @@ function createToolCard(tool) {
     </div>
      <div class="tool-footer">
         <div class="tool-stats">
-        <div class="stat">
+        <div class="stat click-stat">
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-            <span>${tool.views || 0}</span>
+            <span>${tool.clickCnt || 0}</span>
         </div>
-        <div class="stat">
+        <div class="stat like-stat">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 15v4c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2v-4M17 8l-5-5-5 5M12 4.2v10.3"/></svg>
-            <span>${tool.like || 0}</span>
+            <span>${tool.likeCnt || 0}</span>
         </div>
         </div>
         <div class="tool-actions">
@@ -57,26 +253,32 @@ function createToolCard(tool) {
 
     // 添加导入按钮点击事件
     const importBtn = card.querySelector('.import-btn');
-    importBtn.addEventListener('click', () => importTool(tool));
+    importBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        importTool(tool);
+    });
 
+    // 绑定点击事件
+    card.querySelector('.to_website').addEventListener('click', async () => {
+        // 增加点击次数
+        console.log('点击了卡片:', tool);
+        const ans = await execToolClicked(tool.id, null, 1);
+        if (ans) {
+            // 更新点击次数
+            card.querySelector('.click-stat span').textContent = (tool.clickCnt || 0) + 1;
+        }
+    });
     return card;
 }
 
-// 获取共享导航数据
-async function getSharedTools() {
-    try {
-        const response = await fetch('https://story.hhui.top/');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        return data['result'];
-    } catch (error) {
-        console.error('获取导航卡片数据失败:', error);
-        // 返回空数组作为默认值
-        return [];
-    }
+
+async function importTool(tool) {
+    openImportToolModal(tool);
 }
+
+
+// ------------------------------------------------------------------------------------
+// 下面是导入工具的逻辑
 
 let TOTAL_CATEGORY = [];
 // 从本地存储获取工具数据，如果不存在则使用默认数据
@@ -86,7 +288,10 @@ function initCategory() {
     });
 }
 initCategory();
-
+// 当前的分类
+function getCategories() {
+    return TOTAL_CATEGORY;
+}
 // 添加导航卡片的模态框HTML
 const importToolModal = `
   <div id="import-tool-modal" class="modal">
@@ -95,15 +300,15 @@ const importToolModal = `
       <form id="import-tool-form">
         <div class="form-group">
           <label for="title">标题</label>
-          <input type="text" id="title" name="title" readonly>
+          <input type="text" id="title" name="title" >
         </div>
         <div class="form-group">
           <label for="description">描述</label>
-          <textarea id="description" name="description" readonly></textarea>
+          <textarea id="description" name="description" ></textarea>
         </div>
         <div class="form-group">
           <label for="url">网址</label>
-          <input type="url" id="url" name="url" readonly>
+          <input type="url" id="url" name="url" >
         </div>
         <div class="form-group">
             <label for="icon">图标</label>
@@ -126,13 +331,6 @@ const importToolModal = `
 
 // 将模态框添加到body
 document.body.insertAdjacentHTML('beforeend', importToolModal);
-
-
-
-// 当前的分类
-function getCategories() {
-    return TOTAL_CATEGORY;
-}
 
 // 处理分类选择
 function handleCategorySelect() {
@@ -182,36 +380,53 @@ if (closeImportBtn) {
 function handleImportToolSubmit(e, tool) {
     e.preventDefault();
     try {
-        // 获取本地存储的工具列表
-        const localTools = JSON.parse(localStorage.getItem('tools') || '[]');
+        cacheGetToolsData().then(localTools => {
+            // 检查工具是否已经存在
+            if (localTools.some(t => t.url === tool.url)) {
+                toast.warning('该工具已经在您的导航中', 1500);
+                closeImportToolModal();
+                bindImportClickListener(tool); 
+                return;
+            }
 
-        // 检查工具是否已经存在
-        if (localTools.some(t => t.id === tool.id)) {
-            alert('该工具已经在您的导航中');
-            return;
-        }
-
-        // 添加到本地存储
-        localTools.push(tool);
-        localStorage.setItem('tools', JSON.stringify(localTools));
-
-        alert('导入成功！');
-        closeImportToolModal();
+            localTools.push(tool);
+            cacheSaveToolsData(localTools).then(() => {
+                toast.success('导入成功', 1500);
+                closeImportToolModal();
+                bindImportClickListener(tool);
+            })
+        })
     } catch (error) {
-        console.error('导入失败:', error);
-        alert('导入失败，请稍后重试');
+        toast.error('导入失败:', error);
     }
+}
+
+function bindImportClickListener(tool) {
+    document.querySelectorAll('.tool-card').forEach(async element => {
+        const target = element.querySelector('a');
+        const id = target.dataset.linkToolId;
+        console.log('导入的是id:', id, tool.toolId);
+        if (id == tool.toolId) {
+            // 正好是这个
+            const ans = await execToolClicked(tool.toolId, 1, null);
+            if (ans) {
+                element.querySelector('.like-stat span').textContent = (tool.likes || 0) + 1;
+            }
+        }
+    });
 }
 
 // 打开导入工具模态框
 function openImportToolModal(tool) {
     const modal = document.getElementById('import-tool-modal');
     const form = document.getElementById('import-tool-form');
+    console.log('导入的工具:', tool);
 
     // 填充表单数据
-    form.title.value = tool.name;
-    form.description.value = tool.description;
+    form.title.value = tool.title;
+    form.description.value = tool.desc;
     form.url.value = tool.url;
+    form.icon.value = tool.icon;
 
 
     const categorySelect = document.getElementById('category');
@@ -237,7 +452,17 @@ function openImportToolModal(tool) {
     form.category.value = tool.category;
 
     // 添加表单提交事件
-    form.onsubmit = (e) => handleImportToolSubmit(e, tool);
+    form.onsubmit = (e) => handleImportToolSubmit(e, {
+        title: form.title.value,
+        description: form.description.value,
+        url: form.url.value,
+        icon: form.icon.value,
+        category: form.category.value,
+        likes: tool.likeCnt,
+        views: 0,
+        toolId: tool.id,
+        id: new Date().getTime().toString()
+    });
 
     modal.classList.add('active');
 
@@ -245,46 +470,5 @@ function openImportToolModal(tool) {
     handleCategorySelect();
 }
 
-async function importTool(tool) {
-    openImportToolModal(tool);
-}
 
-// 分类切换
-document.addEventListener('DOMContentLoaded', () => {
-    const categoryLinks = document.querySelectorAll('.category-link');
-
-    categoryLinks.forEach(link => {
-        link.addEventListener('click', (e) => {
-            e.preventDefault();
-
-            // 移除其他分类的active类
-            categoryLinks.forEach(l => {
-                l.parentElement.classList.remove('active');
-            });
-
-            // 添加当前分类的active类
-            link.parentElement.classList.add('active');
-
-            // 获取分类ID并过滤工具
-            const category = link.getAttribute('href').substring(1);
-            filterToolsByCategory(category);
-        });
-    });
-});
-
-// 根据分类过滤工具
-async function filterToolsByCategory(category) {
-    const container = document.getElementById('share-tools-container');
-    const tools = await getSharedTools();
-
-    container.innerHTML = '';
-
-    const filteredTools = category === 'all'
-        ? tools
-        : tools.filter(tool => tool.category === category);
-
-    filteredTools.forEach(tool => {
-        const card = createToolCard(tool);
-        container.appendChild(card);
-    });
-}
+// ------------------------------------------------------------------------------------

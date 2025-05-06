@@ -1,18 +1,18 @@
 class Toast {
-  constructor() {
-    this.container = null;
-    this.createContainer();
-  }
+    constructor() {
+        this.container = null;
+        this.createContainer();
+    }
 
-  createContainer() {
-    if (!this.container) {
-      this.container = document.createElement('div');
-      this.container.className = 'toast-container';
-      document.body.appendChild(this.container);
+    createContainer() {
+        if (!this.container) {
+            this.container = document.createElement('div');
+            this.container.className = 'toast-container';
+            document.body.appendChild(this.container);
 
-      // 添加样式
-      const style = document.createElement('style');
-      style.textContent = `
+            // 添加样式
+            const style = document.createElement('style');
+            style.textContent = `
         .toast-container {
           position: fixed;
           top: 20px;
@@ -44,35 +44,43 @@ class Toast {
         .toast.error {
           background-color: rgba(220, 53, 69, 0.9);
         }
+
+        .toast.warning  {
+          background-color: rgba(96, 46, 235, 0.9);
+        }
       `;
-      document.head.appendChild(style);
+            document.head.appendChild(style);
+        }
     }
-  }
 
-  show(message, type = 'default', duration = 3000) {
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    toast.textContent = message;
+    show(message, type = 'default', duration = 3000) {
+        const toast = document.createElement('div');
+        toast.className = `toast ${type}`;
+        toast.textContent = message;
 
-    this.container.appendChild(toast);
+        this.container.appendChild(toast);
 
-    // 触发重绘以启动动画
-    setTimeout(() => toast.classList.add('show'), 10);
+        // 触发重绘以启动动画
+        setTimeout(() => toast.classList.add('show'), 10);
 
-    // 自动移除
-    setTimeout(() => {
-      toast.classList.remove('show');
-      setTimeout(() => this.container.removeChild(toast), 300);
-    }, duration);
-  }
+        // 自动移除
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => this.container.removeChild(toast), 300);
+        }, duration);
+    }
 
-  success(message, duration) {
-    this.show(message, 'success', duration);
-  }
+    success(message, duration) {
+        this.show(message, 'success', duration);
+    }
 
-  error(message, duration) {
-    this.show(message, 'error', duration);
-  }
+    error(message, duration) {
+        this.show(message, 'error', duration);
+    }
+
+    warning(message, duration) {
+        this.show(message, 'warning', duration);
+    }
 }
 
 // 创建全局实例

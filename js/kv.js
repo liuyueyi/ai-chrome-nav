@@ -4,7 +4,7 @@ function cacheGetToolsData() {
         chrome.storage.local.get('toolsData', (result) => {
             let ans = result['toolsData']
             ans = ans ? JSON.parse(ans) : []
-            // console.warn('返回的内容是:', JSON.stringify(ans))
+            console.warn('返回的内容是:', JSON.stringify(ans))
             // 将ans根据sort进行排序
             ans = ans.sort((a, b) => (b.sort || 0) - (a.sort || 0))
             resolve(ans);
@@ -13,6 +13,20 @@ function cacheGetToolsData() {
 }
 
 function cacheSaveToolsData(data) {
+    // 确保data数组中每个元素都有id
+    data = data.map(item => {
+        if (!item.id) {
+            item.id = Date.now().toString();
+        }
+        if (!item.views) {
+            item.views = 0;
+        }
+        if (!item.likes) {
+            item.likes = 0;
+        }
+        return item;
+    })
+
     return new Promise((resolve) => {
         chrome.storage.local.set({ toolsData: JSON.stringify(data) }, () => {
             resolve()
@@ -36,4 +50,35 @@ function getToolsCategory() {
             resolve(res);
         });
     });
+}
+
+let DEV_ID = null;
+function initDevId() {
+    return new Promise((resolve) => {
+        chrome.storage.local.get('devId', (result) => {
+            let ans = result['devId']
+            if (!ans) {
+                // 生成一个随机的16位字符串
+                ans = Math.random().toString(36).substr(2, 16);
+                chrome.storage.local.set({ devId: ans }, () => {
+                    DEV_ID = ans;
+                    resolve(ans)
+                })
+            } else {
+                DEV_ID = ans;
+                resolve(ans)
+            }
+        });
+    });
+}
+/**
+ * 获取设备id
+ * @returns 
+ */
+function getDevId() {
+    if (DEV_ID) {
+        return DEV_ID;
+    } else {
+        return initDevId();
+    }
 }
