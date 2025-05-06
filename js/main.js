@@ -542,11 +542,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       // 收藏区域，只显示头像和标题
+      favoritesContainer.innerHTML = '';
       favoritesContainer.innerHTML = favoriteTools.map(tool => {
         const cardElement = document.createElement('div');
         cardElement.className = 'fav-tool-card';
         cardElement.innerHTML = `
-              <a href="${tool.url}" target="_blank" data-link-tool-id="${tool.id}" data-tool-url="${tool.url}" class="fav-tool-card-content">
+              <a href="${tool.url}" target="_blank" data-mark-link-tool-id="${tool.id}" data-tool-url="${tool.url}" class="fav-tool-card-content">
                 <img src="${tool.icon}" alt="${tool.title}" class="fav-tool-icon-img">
                 ${tool.title}
               </a>
@@ -556,6 +557,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 重新绑定事件监听器
       setupEventListeners();
+      // 绑定访问按钮点击事件,执行访问次数+1
+      document.querySelectorAll('[data-mark-link-tool-id]').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+          e.preventDefault();
+          const toolId = this.dataset.markLinkToolId;
+          const url = this.dataset.toolUrl;
+          getToolsData(tools => {
+            const tool = tools.find(t => t.id === toolId);
+            if (tool) {
+              tool.views++;
+              // 保存卡片数据
+              cacheSaveToolsData(tools).then(() => {
+                renderTools();
+              });
+            }
+            window.open(url, '_blank');
+          });
+        });
+      });
     });
   }
 
@@ -699,6 +719,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const toolsContainer = document.getElementById("tools-container")
     toolsContainer.querySelectorAll('.delete-tool-btn').forEach(btn => {
       btn.addEventListener('click', () => {
+        e.preventDefault();
         console.log('删除按钮被点击'); // Log for debugging purpose
         const toolId = btn.getAttribute('data-tool-id');
         deleteTool(toolId);

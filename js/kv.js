@@ -4,7 +4,7 @@ function cacheGetToolsData() {
         chrome.storage.local.get('toolsData', (result) => {
             let ans = result['toolsData']
             ans = ans ? JSON.parse(ans) : []
-            console.warn('返回的内容是:', JSON.stringify(ans))
+            // console.warn('返回的内容是:', JSON.stringify(ans))
             // 将ans根据sort进行排序
             ans = ans.sort((a, b) => (b.sort || 0) - (a.sort || 0))
             resolve(ans);
@@ -32,7 +32,7 @@ function getToolsCategory() {
             })
             // 按照数量进行排序，然后只返回key
             res = Object.keys(res).sort((a, b) => res[b] - res[a])
-            console.log('返回的内容是:', JSON.stringify(res))
+            // console.log('返回的内容是:', JSON.stringify(res))
             resolve(res);
         });
     });
