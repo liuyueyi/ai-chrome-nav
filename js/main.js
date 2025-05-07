@@ -437,6 +437,9 @@ document.addEventListener("DOMContentLoaded", () => {
           modal.classList.add('active');
         }
       } else {
+        document.getElementById('share-tool-title').textContent = ''
+        document.getElementById('share-tool-description').textContent = ''
+        document.querySelector('.share-tool-info').removeAttribute('data-tool-id');
         const categoryDiv = document.getElementById('share-tool-category');
         categoryDiv.textContent = '共享分组:' + category;
         categoryDiv.setAttribute('data-category', category);
