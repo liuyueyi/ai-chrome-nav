@@ -479,13 +479,13 @@
     object-fit: cover;
 }
 
-.tool-share {
+.share-btn {
     position: fixed;
-    right: 1rem;
+    right: 0rem;
     top: 4rem;
 }
 
-.compact-view .tool-share {
-    right: 1.5rem;
-    top: 4.5rem;
+.compact-view .share-btn {
+    right: 0.45rem;
+    top: 4rem;
 }
