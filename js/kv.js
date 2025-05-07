@@ -59,7 +59,7 @@ function initDevId() {
             let ans = result['devId']
             if (!ans) {
                 // 生成一个随机的16位字符串
-                ans = Math.random().toString(36).substr(2, 16);
+                ans = Math.random().toString(36).substr(2, 48);
                 chrome.storage.local.set({ devId: ans }, () => {
                     DEV_ID = ans;
                     resolve(ans)
