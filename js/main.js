@@ -209,34 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 初始化分类选择事件
   handleCategorySelect();
 
-
-  // 分享导航卡片的模态框HTML
-  const shareToolModal = `
-  <div id="share-tool-modal" class="modal">
-    <div class="modal-content">
-      <h2>分享导航卡片</h2>
-      <div class="share-tool-info">
-        <div class="share-tool-header">
-          <img id="share-tool-icon" src="" alt="工具图标" class="share-tool-icon">
-          <h3 id="share-tool-title"></h3>
-        </div>
-        <p id="share-tool-description" class="share-tool-description"></p>
-        <div class="share-tool-meta">
-          <span id="share-tool-category"></span>
-          <span id="share-tool-url"></span>
-        </div>
-        <div>
-          <span id="share-num">分享卡片数：</span>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button type="button" class="btn btn-ghost" id="close-share-tool-modal-btn">取消</button>
-        <button type="button" class="btn btn-primary" id="confirm-share-tool-btn">确认分享</button>
-      </div>
-    </div>
-  </div>
-  `;
-
+  // ---------------------------------------------------------- 单个卡片编辑代码开始 ---------------------------------------------
   // 添加导航卡片的模态框HTML
   const addToolModal = `
   <div id="add-tool-modal" class="modal">
@@ -281,6 +254,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 将模态框添加到body
   document.body.insertAdjacentHTML('beforeend', addToolModal);
+
+  // 编辑卡片事件 - 使用事件委托
+  document.getElementById("tools-container").addEventListener('click', (e) => {
+    e.preventDefault();
+    const editBtn = e.target.closest('.edit-tool-btn');
+    if (editBtn) {
+      const toolId = editBtn.getAttribute('data-tool-id');
+      openAddToolModal(toolId);
+    }
+  });
 
   // 打开添加工具模态框
   function openAddToolModal(toolId = null) {
@@ -338,6 +321,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (closeBtn) {
     closeBtn.addEventListener('click', closeAddToolModal);
   }
+  document.getElementById('add-tool-modal').addEventListener('click', function (e) {
+    if (e.target === this) {
+      closeAddToolModal();
+    }
+  });
 
   // 处理添加工具表单提交
   function handleAddToolSubmit(e) {
@@ -412,10 +400,37 @@ document.addEventListener("DOMContentLoaded", () => {
   if (addToolForm) {
     addToolForm.addEventListener('submit', handleAddToolSubmit);
   }
+  // ---------------------------------------------------------- 单个卡片编辑代码结束 ---------------------------------------------
 
 
   // ---------------------------------------------------------- 分享相关代码 ---------------------------------------------
 
+  // 分享导航卡片的模态框HTML
+  const shareToolModal = `
+  <div id="share-tool-modal" class="modal">
+    <div class="modal-content">
+      <h2>分享导航卡片</h2>
+      <div class="share-tool-info">
+        <div class="share-tool-header">
+          <img id="share-tool-icon" src="" alt="工具图标" class="share-tool-icon">
+          <h3 id="share-tool-title"></h3>
+        </div>
+        <p id="share-tool-description" class="share-tool-description"></p>
+        <div class="share-tool-meta">
+          <span id="share-tool-category"></span>
+          <span id="share-tool-url"></span>
+        </div>
+        <div>
+          <span id="share-num">分享卡片数：</span>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="button" class="btn btn-ghost" id="close-share-tool-modal-btn">取消</button>
+        <button type="button" class="btn btn-primary" id="confirm-share-tool-btn">确认分享</button>
+      </div>
+    </div>
+  </div>
+  `;
   // 将分享模态框添加到body
   document.body.insertAdjacentHTML('beforeend', shareToolModal);
 
@@ -446,7 +461,7 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('share-tool-icon').style.display = 'none';
         const shareNum = document.getElementById('share-num')
         shareNum.style.display = 'block';
-        shareNum.textContent = '预计分享导航：' + currentTools.filter(t => t.category === category).length + '个';
+        shareNum.textContent = '预计分享导航：' + currentTools.filter(t => t.category === category).length + '个到共享大厅~';
         modal.classList.add('active');
       }
     });
@@ -462,6 +477,12 @@ document.addEventListener("DOMContentLoaded", () => {
   if (closeShareBtn) {
     closeShareBtn.addEventListener('click', closeShareToolModal);
   }
+
+  document.getElementById('share-tool-modal').addEventListener('click', function (e) {
+    if (e.target === this) {
+      closeShareToolModal();
+    }
+  });
 
   // 添加确认分享按钮事件监听
   const confirmShareBtn = document.getElementById('confirm-share-tool-btn');
@@ -543,19 +564,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // ---------------------------------------------------------- 分享相关代码 - 结束 ---------------------------------------------
 
-  // 删除工具
-  function deleteTool(toolId) {
-    console.log('准备删除导航信息:', toolId);
-    if (confirm('确定要删除这个导航吗？')) {
-      getToolsData(currentTools => {
-        const updatedTools = currentTools.filter(tool => tool.id != toolId);
-        console.log('删除后的工具列表:', updatedTools);
-        cacheSaveToolsData(updatedTools).then(() => {
-          renderTools();
-        })
-      })
-    }
-  }
 
   function renderTools() {
     const toolsContainer = document.getElementById("tools-container")
@@ -748,6 +756,9 @@ document.addEventListener("DOMContentLoaded", () => {
           <button class="btn btn-ghost category-download" data-category="${category}">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
           </button>
+          <button class="btn btn-ghost category-edit" data-category="${category}">
+            <svg class="icon" style="width: 1em;height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="2420"><path d="M884.950084 223.992517c2.362814 5.238304 4.217045 11.375072 5.687536 18.343787 1.470491 6.963599 2.172479 14.316054 2.172479 21.85782 0 7.605212-1.470491 15.146978-4.344958 22.751167-2.940982 7.608282-7.54279 14.895245-13.936407 21.862937-6.964622 7.030114-13.230326 13.101389-18.727527 18.343787-5.493108 5.238304-10.289344 9.904581-14.378475 13.994736-4.6673 4.6673-9.013281 8.757454-13.038968 12.272511L665.526629 189.795671c6.967692-6.389524 15.21247-14.126742 24.798802-23.200398 9.586332-9.012258 17.579377-16.171308 23.969924-21.411659 8.116865-6.389524 16.554024-10.929934 25.245987-13.548574 8.694009-2.622734 17.257036-3.770883 25.695219-3.515057 8.435113 0.318248 16.555048 1.594311 24.415063 3.962242 7.861038 2.301416 14.634302 4.985548 20.453844 7.860015 12.205996 6.393617 25.692149 17.641799 40.520879 33.68417C865.326141 189.730179 876.829126 206.541053 884.950084 223.992517zM206.550263 650.944516c3.452635-3.515057 11.634991-11.825326 24.352641-24.927739 12.784164-13.102413 28.761044-29.335119 47.872311-48.575322l63.597457-63.853283 70.562079-70.879304 187.206706-188.103122 162.857135 164.451446L575.790862 607.226828 506.121106 678.107155c-23.200398 22.754237-44.100404 43.591821-62.701041 62.573127-18.599613 18.983353-33.939997 34.579563-46.145993 46.786583-12.209066 12.271488-19.429515 19.240203-21.796422 21.027919-5.815449 5.241374-12.461823 10.80509-20.00359 16.620539-7.54279 5.815449-15.403828 10.478655-23.523763 13.993712-8.115841 4.093225-20.00359 9.012258-35.728736 14.894222-15.658631 5.815449-32.081673 11.502985-49.213865 17.063631-17.129122 5.562692-33.361829 10.354835-48.764634 14.44806-15.403828 4.089132-26.844392 6.707772-34.387181 7.860015-15.658631 1.726318-26.14138-0.574075-31.383778-6.967692-5.241374-6.390547-6.64535-17.191544-4.344958-32.341592 1.14815-8.179286 3.898797-19.938098 8.243755-35.407418 4.345981-15.468296 9.012258-31.510668 13.932314-48.128137 4.923126-16.617469 9.715269-31.957853 14.382569-45.955658 4.6673-13.998829 8.438183-23.647583 11.313673-28.888957 3.515057-8.182356 7.413853-15.59621 11.758812-22.308075C192.170764 666.540725 198.433398 659.126872 206.550263 650.944516zM499.029594 817.250192l77.848019 0 0 77.913511L499.029594 895.163703 499.029594 817.250192zM657.603169 817.250192l77.848019 0 0 77.913511-77.848019 0L657.603169 817.250192zM816.239166 817.250192l77.848019 0 0 77.913511-77.848019 0L816.239166 817.250192z" p-id="2421"></path></svg>
+          </button>
           `
         categoryContainer.appendChild(catTitle);
 
@@ -788,7 +799,7 @@ document.addEventListener("DOMContentLoaded", () => {
     bindDeleteBtnListener();
     bindCardClickListener();
     bindLikedClickListener();
-    bindShareClickListener();
+    bindCategoryClickListener();
   }
 
   function bindDeleteBtnListener() {
@@ -802,6 +813,20 @@ document.addEventListener("DOMContentLoaded", () => {
         deleteTool(toolId);
       });
     });
+  }
+
+  // 删除工具
+  function deleteTool(toolId) {
+    console.log('准备删除导航信息:', toolId);
+    if (confirm('确定要删除这个导航吗？')) {
+      getToolsData(currentTools => {
+        const updatedTools = currentTools.filter(tool => tool.id != toolId);
+        console.log('删除后的工具列表:', updatedTools);
+        cacheSaveToolsData(updatedTools).then(() => {
+          renderTools();
+        })
+      })
+    }
   }
 
   function bindCardClickListener() {
@@ -838,7 +863,7 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
-  function bindShareClickListener() {
+  function bindCategoryClickListener() {
     document.querySelectorAll(".category-share").forEach((btn) => {
       btn.addEventListener("click", (e) => {
         e.preventDefault()
@@ -854,7 +879,160 @@ document.addEventListener("DOMContentLoaded", () => {
         exportToolsByCategory(category)
       })
     })
+
+
+    document.querySelectorAll(".category-edit").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault()
+        const category = btn.getAttribute("data-category")
+        // 打开编辑分类模态框
+        openEditCategoryModal(category);
+      });
+    });
   }
+
+  // ------------------------------------------------------- 分组编辑弹窗 开始 -------------------------
+
+  // 编辑分组的模态框HTML
+  const editCategoryModal = `
+  <div id="edit-category-modal" class="modal">
+    <div class="modal-content category-modal-content">
+      <div class="modal-header">
+        <h2>编辑分组</h2>
+        <button class="close-btn" id="category-edit-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="edit-category-form">
+          <input type="hidden" id="old-category-name">
+          <div class="form-group">
+            <label for="new-category-name">分组名称</label>
+            <input type="text" id="new-category-name" name="new-category-name" required>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn  btn-danger" id="delete-category-btn">
+              <svg class="icon" fill="none" style="width: 1em;height: 1em;vertical-align: middle;fill: currentColor;overflow: hidden;" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg" p-id="1548">
+              <path d="M106.666667 213.333333h810.666666v42.666667H106.666667z"></path>
+              <path d="M640 128v42.666667h42.666667V128c0-23.573333-19.093333-42.666667-42.538667-42.666667H383.872A42.496 42.496 0 0 0 341.333333 128v42.666667h42.666667V128h256z"></path>
+              <path d="M213.333333 896V256H170.666667v639.957333C170.666667 919.552 189.653333 938.666667 213.376 938.666667h597.248C834.218667 938.666667 853.333333 919.68 853.333333 895.957333V256h-42.666666v640H213.333333z"></path>
+              <path d="M320 341.333333h42.666667v384h-42.666667zM490.666667 341.333333h42.666666v384h-42.666666zM661.333333 341.333333h42.666667v384h-42.666667z" ></path></svg>
+              <span>删除分组</span>
+            </button>
+            <button class="btn btn-ghost" id="import-category-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M12 12v9"></path><path d="m8 17 4-4 4 4"></path></svg>
+              <span>导入分组</span>
+            </button>
+            <button class="btn btn-ghost" id="export-category-btn">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              <span>导出分组</span>
+            </button>
+            
+            <button type="submit" class="btn btn-primary">保存</button>
+          </div>
+          <input type="file" id="category-import-file" accept=".json" style="display: none;">
+        </form>
+      </div>
+    </div>
+  </div>
+  `;
+
+  // 将编辑分组模态框添加到body
+  document.body.insertAdjacentHTML('beforeend', editCategoryModal);
+
+  // 打开编辑分组模态框
+  function openEditCategoryModal(category) {
+    const modal = document.getElementById('edit-category-modal');
+    const form = document.getElementById('edit-category-form');
+    const oldCategoryNameInput = document.getElementById('old-category-name');
+    const newCategoryNameInput = document.getElementById('new-category-name');
+
+    oldCategoryNameInput.value = category;
+    newCategoryNameInput.value = category;
+    modal.classList.add('active');
+  }
+
+  // 关闭编辑分组模态框
+  function closeEditCategoryModal() {
+    document.getElementById('edit-category-modal').classList.remove('active');
+  }
+  document.getElementById('category-edit-close').addEventListener('click', function (e) {
+    e.preventDefault();
+    closeEditCategoryModal();
+  });
+
+  // 添加关闭按钮事件监听
+  document.getElementById('edit-category-modal').addEventListener('click', function (e) {
+    if (e.target === this) {
+      closeEditCategoryModal();
+    }
+  });
+
+  document.getElementById('export-category-btn').addEventListener('click', function (e) {
+    // 导出当前分组的所有导航卡片
+    e.preventDefault()
+    const category = document.getElementById('new-category-name').value;
+    exportToolsByCategory(category)
+  });
+
+  // 处理编辑分组表单提交
+  document.getElementById('edit-category-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const oldCategoryName = document.getElementById('old-category-name').value;
+    const newCategoryName = document.getElementById('new-category-name').value;
+
+    if (oldCategoryName === newCategoryName) {
+      closeEditCategoryModal();
+      return;
+    }
+
+    getToolsData(currentTools => {
+      const updatedTools = currentTools.map(tool => {
+        if (tool.category === oldCategoryName) {
+          return { ...tool, category: newCategoryName };
+        }
+        return tool;
+      });
+
+      cacheSaveToolsData(updatedTools).then(() => {
+        renderTools();
+        closeEditCategoryModal();
+        toast.success('分组名称修改成功');
+      });
+    });
+  });
+
+  // 处理删除分组按钮点击
+  document.getElementById('delete-category-btn').addEventListener('click', function () {
+    const category = document.getElementById('new-category-name').value;
+    if (confirm(`确定要删除分组 "${category}"？该分组下的所有导航卡片也将被删除！`)) {
+      getToolsData(currentTools => {
+        const filteredTools = currentTools.filter(tool => tool.category !== category);
+        cacheSaveToolsData(filteredTools).then(() => {
+          renderTools();
+          closeEditCategoryModal();
+          toast.success('分组删除成功');
+        });
+      })
+    }
+  })
+
+  document.getElementById('import-category-btn').addEventListener('click', function () {
+    const category = document.getElementById('new-category-name').value;
+    const fileInput = document.getElementById('category-import-file');
+    fileInput.click();
+    fileInput.addEventListener('change', function (e) {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          doImportData(category, e);
+        }
+        reader.readAsText(file);
+      }
+      fileInput.value = '';
+    })
+  });
+
+  // ------------------------------------------------------- 分组编辑弹窗 结束 -------------------------
 
   function toggleLike(toolId) {
     getToolsData(currentToolsData => {
@@ -1079,6 +1257,9 @@ document.addEventListener("DOMContentLoaded", () => {
     })
   }
 
+
+  // ------------------------------ 设置相关逻辑 
+
   function initSettings() {
     // 从本地存储加载设置
     const settings = JSON.parse(localStorage.getItem('settings') || '{}');
@@ -1139,58 +1320,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function toggleTheme() {
-    document.body.classList.toggle('dark-theme')
-    const isDark = document.body.classList.contains('dark-theme')
-    localStorage.setItem('theme', isDark ? 'dark' : 'light')
-
-    // Update theme toggle button icon
-    const themeToggleIcon = document.querySelector('#theme-toggle svg')
-    if (themeToggleIcon) {
-      themeToggleIcon.style.fill = isDark ? 'currentColor' : 'none'
-    }
-  }
-
-  // Initialize theme
-  const savedTheme = localStorage.getItem('theme')
-  if (savedTheme === 'dark') {
-    document.body.classList.add('dark-theme')
-  }
-
-  // 从其他页面过来的，用于自动添加导航
-  const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('action') === 'add') {
-    console.log('添加工具的URL参数:', urlParams);
-    const url = urlParams.get('url');
-    // 检查URL是否重复
-    getToolsData(currentTools => {
-      const duplicateUrl = currentTools.find(tool => tool.url === url);
-      if (!duplicateUrl) {
-        // 打开添加工具的模态框
-        openAddToolModal();
-
-        // 预填充表单数据
-        const form = document.getElementById('add-tool-form');
-        if (form) {
-          form.title.value = urlParams.get('title') || '';
-          form.url.value = urlParams.get('url') || '';
-          form.icon.value = urlParams.get('icon') || 'public/placeholder.svg';
-        }
-      }
-    });
-  }
-
-
-  // 编辑卡片事件 - 使用事件委托
-  document.getElementById("tools-container").addEventListener('click', (e) => {
-    e.preventDefault();
-    const editBtn = e.target.closest('.edit-tool-btn');
-    if (editBtn) {
-      const toolId = editBtn.getAttribute('data-tool-id');
-      openAddToolModal(toolId);
-    }
-  });
-
+  // 分组全部导出
   function exportToolsByCategory(category) {
     cacheGetToolsData().then(tools => {
       const filteredTools = tools.filter(tool => tool.category === category);
@@ -1246,6 +1376,55 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   exportTools();
 
+  async function doImportData(category, e) {
+    // 验证每个工具的必要字段
+    const isValidTool = (tool) => {
+      return tool.title && tool.url && (category || tool.category);
+    };
+    try {
+      const importedData = JSON.parse(e.target.result);
+      // 验证导入的数据格式
+      if (!Array.isArray(importedData)) {
+        throw new Error('导入的数据格式不正确');
+      }
+  
+      if (!importedData.every(isValidTool)) {
+        throw new Error('导入的数据缺少必要字段');
+      }
+  
+      // 获取当前的工具数据
+      const currentTools = await cacheGetToolsData();
+  
+      // 合并数据，根据url去重
+      const mergedTools = [...currentTools];
+      let addedCount = 0;
+  
+      for (const tool of importedData) {
+        if (!currentTools.some(t => t.url === tool.url)) {
+          if (category) {
+            // 如果有指定分类，将导入的数据的分类设置为指定的分类
+            tool.category = category;
+          }
+  
+          mergedTools.push(tool);
+          addedCount++;
+        }
+      }
+  
+      // 保存合并后的数据
+      await cacheSaveToolsData(mergedTools);
+  
+      // 重新渲染工具列表
+      renderTools();
+  
+      // 显示成功消息
+      toast.success(`成功导入 ${addedCount} 个导航卡片！`);
+    } catch (error) {
+      console.error('导入数据失败:', error);
+      toast.error('导入数据失败，请重试');
+    }
+  }
+
   // 导入事件
   function importTools() {
     const importBtn = document.getElementById('import-data');
@@ -1262,50 +1441,7 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         const reader = new FileReader();
         reader.onload = async (e) => {
-          try {
-            const importedData = JSON.parse(e.target.result);
-
-            // 验证导入的数据格式
-            if (!Array.isArray(importedData)) {
-              throw new Error('导入的数据格式不正确');
-            }
-
-            // 验证每个工具的必要字段
-            const isValidTool = (tool) => {
-              return tool.title && tool.url && tool.category;
-            };
-
-            if (!importedData.every(isValidTool)) {
-              throw new Error('导入的数据缺少必要字段');
-            }
-
-            // 获取当前的工具数据
-            const currentTools = await cacheGetToolsData();
-
-            // 合并数据，根据url去重
-            const mergedTools = [...currentTools];
-            let addedCount = 0;
-
-            for (const tool of importedData) {
-              const isDuplicate = currentTools.some(t => t.url === tool.url);
-              if (!isDuplicate) {
-                mergedTools.push(tool);
-                addedCount++;
-              }
-            }
-
-            // 保存合并后的数据
-            await cacheSaveToolsData(mergedTools);
-
-            // 重新渲染工具列表
-            renderTools();
-
-            // 显示成功消息
-            toast.success(`成功导入 ${addedCount} 个导航卡片！`);
-          } catch (error) {
-            console.error('解析导入数据失败:', error);
-            toast.error('导入失败：' + error.message);
-          }
+          doImportData(null, e);
         };
 
         reader.readAsText(file);
@@ -1319,5 +1455,49 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
   importTools();
+
+
+  // -------------------------------  设置相关结束
+
+  function toggleTheme() {
+    document.body.classList.toggle('dark-theme')
+    const isDark = document.body.classList.contains('dark-theme')
+    localStorage.setItem('theme', isDark ? 'dark' : 'light')
+
+    // Update theme toggle button icon
+    const themeToggleIcon = document.querySelector('#theme-toggle svg')
+    if (themeToggleIcon) {
+      themeToggleIcon.style.fill = isDark ? 'currentColor' : 'none'
+    }
+  }
+
+  // Initialize theme
+  const savedTheme = localStorage.getItem('theme')
+  if (savedTheme === 'dark') {
+    document.body.classList.add('dark-theme')
+  }
+
+  // 从其他页面过来的，用于自动添加导航
+  const urlParams = new URLSearchParams(window.location.search);
+  if (urlParams.get('action') === 'add') {
+    console.log('添加工具的URL参数:', urlParams);
+    const url = urlParams.get('url');
+    // 检查URL是否重复
+    getToolsData(currentTools => {
+      const duplicateUrl = currentTools.find(tool => tool.url === url);
+      if (!duplicateUrl) {
+        // 打开添加工具的模态框
+        openAddToolModal();
+
+        // 预填充表单数据
+        const form = document.getElementById('add-tool-form');
+        if (form) {
+          form.title.value = urlParams.get('title') || '';
+          form.url.value = urlParams.get('url') || '';
+          form.icon.value = urlParams.get('icon') || 'public/placeholder.svg';
+        }
+      }
+    });
+  }
 
 })

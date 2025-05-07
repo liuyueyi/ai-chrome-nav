@@ -165,6 +165,14 @@ body:before {
 .btn .icon {
   margin-right: 0rem;
 }
+.btn-danger {
+  color: rgb(239, 68, 68);
+}
+
+.btn-danger:hover {
+  color: red;
+  background-color: var(--gray-100);
+}
 
 .btn-ghost {
   color: var(--gray-600);
@@ -830,6 +838,10 @@ body.dark-theme {
   z-index: 1000;
 }
 
+.category-modal-content {
+  width: 50%;
+}
+
 .modal.active {
   display: flex;
   align-items: center;
@@ -840,8 +852,6 @@ body.dark-theme {
   background: rgb(17, 24, 39);
   border-radius: 12px;
   padding: 24px;
-  width: 90%;
-  max-width: 500px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
