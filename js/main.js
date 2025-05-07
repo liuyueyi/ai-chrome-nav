@@ -569,7 +569,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const toolsContainer = document.getElementById("tools-container")
     toolsContainer.innerHTML = ""
 
-    getToolsData(currentToolsData => renderFilteredTools(currentToolsData))
+    // 如果当前选中了分类
+    const currentCategory = document.querySelector('.category-tab.active').textContent;
+    if (currentCategory && currentCategory != '全部') {
+      filterToolsByCategory(currentCategory)
+    } else {
+      getToolsData(currentToolsData => renderFilteredTools(currentToolsData))
+    }
   }
 
   // 获取收藏的工具列表
@@ -654,7 +660,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function buildCardContent(tool) {
     // 极简模式下，只展示文字
-    let simpleMode = true;
+    let simpleMode = getViewmode() == ViewMode.TEXT;
     if (simpleMode) {
       return `
       <a class="tool-header" href="${tool.url}" target="_blank" data-link-tool-id="${tool.id}" data-tool-url="${tool.url}">
@@ -976,7 +982,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById('export-category-btn').addEventListener('click', function (e) {
     // 导出当前分组的所有导航卡片
     e.preventDefault()
-    const category = document.getElementById('new-category-name').value;
+    const category = document.getElementById('old-category-name').value;
     exportToolsByCategory(category)
   });
 
@@ -1009,7 +1015,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 处理删除分组按钮点击
   document.getElementById('delete-category-btn').addEventListener('click', function () {
-    const category = document.getElementById('new-category-name').value;
+    const category = document.getElementById('old-category-name').value;
     if (confirm(`确定要删除分组 "${category}"？该分组下的所有导航卡片也将被删除！`)) {
       getToolsData(currentTools => {
         const filteredTools = currentTools.filter(tool => tool.category !== category);
@@ -1023,7 +1029,7 @@ document.addEventListener("DOMContentLoaded", () => {
   })
 
   document.getElementById('import-category-btn').addEventListener('click', function () {
-    const category = document.getElementById('new-category-name').value;
+    const category = document.getElementById('old-category-name').value;
     const fileInput = document.getElementById('category-import-file');
     fileInput.click();
     fileInput.addEventListener('change', function (e) {
@@ -1296,26 +1302,18 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("show-clock").checked = settings.showClock !== undefined ? settings.showClock : true;
     document.getElementById("show-bookmarks").checked = settings.showBookmarks !== undefined ? settings.showBookmarks : true;
     document.getElementById("particle-density").value = settings.particleDensity || 50;
-    document.getElementById("compact-view").checked = settings.compactView !== undefined ? settings.compactView : false;
     document.getElementById("group-by-category").checked = settings.groupByCategory !== undefined ? settings.groupByCategory : false;
     document.getElementById("hide-slogan").checked = settings.hideSlogan !== undefined ? settings.hideSlogan : false;
     document.getElementById("grid-columns").value = settings.gridColumns || 4;
     document.documentElement.style.setProperty('--grid-columns', `${calculateGridSize(settings.gridColumns || 4)}px`);
-
-    // 应用卡片视图模式
-    const mainContainer = document.querySelector('.main');
-    if (settings.compactView) {
-      mainContainer.classList.add('compact-view');
-    } else {
-      mainContainer.classList.remove('compact-view');
-    }
   }
 
   function saveSettings() {
     const showClock = document.getElementById("show-clock").checked;
     const showBookmarks = document.getElementById("show-bookmarks").checked;
     const particleDensity = document.getElementById("particle-density").value;
-    const compactView = document.getElementById("compact-view").checked;
+    // 卡片的设置，统一在下面的逻辑中维护
+    const viewMode = getViewmode();
     const groupByCategory = document.getElementById("group-by-category").checked;
     const hideSlogan = document.getElementById("hide-slogan").checked;
 
@@ -1324,18 +1322,10 @@ document.addEventListener("DOMContentLoaded", () => {
       showBookmarks,
       particleDensity,
       gridColumns: document.getElementById("grid-columns").value,
-      compactView,
+      viewMode,
       groupByCategory,
       hideSlogan
     };
-
-    // 应用卡片视图模式
-    const mainContainer = document.querySelector('.main');
-    if (compactView) {
-      mainContainer.classList.add('compact-view');
-    } else {
-      mainContainer.classList.remove('compact-view');
-    }
 
     localStorage.setItem('settings', JSON.stringify(settings));
     // Update particle density
@@ -1352,6 +1342,117 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("hero-section").style.display = "block";
     }
   }
+
+
+  // 视图模式类型
+  const ViewMode = {
+    CARD: 'card',
+    COMPACT: 'compact',
+    TEXT: 'text'
+  };
+
+  let cvMode = getViewmode();
+  function getViewmode() {
+    const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+    return settings.viewMode || ViewMode.CARD;
+  }
+
+  // 初始化视图模式
+  function initViewMode() {
+    const viewToggleBtn = document.getElementById('view-toggle-btn');
+    const cardViewBtn = document.getElementById('card-view-btn');
+    const compactViewBtn = document.getElementById('compact-view-btn');
+    const textViewBtn = document.getElementById('text-view-btn');
+
+    // 从本地存储加载视图模式设置
+    const currentViewMode = getViewmode();
+
+    // 应用当前视图模式
+    applyViewMode(currentViewMode);
+
+    // 添加视图切换按钮点击事件
+    viewToggleBtn.addEventListener('click', cycleViewMode);
+
+    // 添加设置面板中视图模式按钮的点击事件
+    cardViewBtn.addEventListener('click', () => setViewMode(ViewMode.CARD));
+    compactViewBtn.addEventListener('click', () => setViewMode(ViewMode.COMPACT));
+    textViewBtn.addEventListener('click', () => setViewMode(ViewMode.TEXT));
+  }
+
+  // 设置视图模式
+  function setViewMode(mode) {
+    // 更新本地存储
+    const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+    settings.viewMode = mode;
+    localStorage.setItem('settings', JSON.stringify(settings));
+
+    // 应用视图模式
+    applyViewMode(mode);
+  }
+
+  // 循环切换视图模式
+  function cycleViewMode() {
+    const currentMode = getViewmode();
+    
+    // 定义视图模式循环顺序
+    const modes = [ViewMode.CARD, ViewMode.COMPACT, ViewMode.TEXT];
+    const currentIndex = modes.indexOf(currentMode);
+    const nextIndex = (currentIndex + 1) % modes.length;
+    setViewMode(modes[nextIndex]);
+  }
+
+  // 应用视图模式
+  function applyViewMode(mode) {
+    const mainContainer = document.querySelector('.main');
+    const cardViewBtn = document.getElementById('card-view-btn');
+    const compactViewBtn = document.getElementById('compact-view-btn');
+    const textViewBtn = document.getElementById('text-view-btn');
+
+    // 移除所有视图模式类
+    mainContainer.classList.remove('card-view', 'compact-view', 'text-view');
+    
+    // 移除所有按钮的激活状态
+    [cardViewBtn, compactViewBtn, textViewBtn].forEach(btn => {
+      if (btn) btn.classList.remove('active');
+    });
+
+    // 应用新的视图模式
+    switch (mode) {
+      case ViewMode.CARD:
+        mainContainer.classList.add('card-view');
+        if (cardViewBtn) cardViewBtn.classList.add('active');
+        updateToggleIcon('grid');
+        break;
+      case ViewMode.COMPACT:
+        mainContainer.classList.add('compact-view');
+        if (compactViewBtn) compactViewBtn.classList.add('active');
+        updateToggleIcon('list');
+        break;
+      case ViewMode.TEXT:
+        mainContainer.classList.add('text-view');
+        if (textViewBtn) textViewBtn.classList.add('active');
+        updateToggleIcon('text');
+        break;
+    }
+    cvMode = mode;
+    renderTools();
+  }
+
+  // 更新悬浮切换按钮图标
+  function updateToggleIcon(type) {
+    const viewToggleBtn = document.getElementById('view-toggle-btn');
+    if (!viewToggleBtn) return;
+
+    const icons = {
+      grid: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-grid"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>',
+      list: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-layout-list"><rect width="7" height="7" x="3" y="3" rx="1"></rect><rect width="7" height="7" x="3" y="14" rx="1"></rect><path d="M14 4h7"></path><path d="M14 9h7"></path><path d="M14 15h7"></path><path d="M14 20h7"></path></svg>',
+      text: '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon icon-text"><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>'
+    };
+
+    viewToggleBtn.innerHTML = icons[type];
+  }
+
+  initViewMode();
 
   // 分组全部导出
   function exportToolsByCategory(category) {
@@ -1533,4 +1634,12 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+
+
+  // 监听书签modal的状态变更，如果style.display === 'none'，则清空表单数据
+  const bookmarksInput = document.getElementById('bookmarks-input');
+  bookmarksInput.addEventListener('change', function () {
+    console.log('bookmarks-input的状态变更了');
+    renderTools();
+  })
 })

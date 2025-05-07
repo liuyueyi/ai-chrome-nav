@@ -48,6 +48,9 @@ body {
   --card-hover: rgba(15, 23, 42, 0.8);
   --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
   --nav-btn-color: white;
+  --primary: #6dc0f5;
+  --primary-hover: #6b94ec;
+  --primary-pre-hover: #98b3ec;
 }
 
 * {
@@ -88,6 +91,33 @@ body:before {
   opacity: 0.3;
   pointer-events: none;
   filter: contrast(1.2) brightness(1.1);
+}
+
+/* 视图模式按钮组 */
+.view-mode-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.view-mode-buttons .btn-sm {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  border-radius: var(--radius);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-mode-buttons .btn-sm:hover {
+  background-color: var(--gray-200);
+}
+
+.view-mode-buttons .btn-sm.active {
+  background-color: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
 /* Header */

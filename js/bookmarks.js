@@ -2,7 +2,6 @@
 const bookmarksModal = document.getElementById('bookmarks-modal');
 const bookmarksContainer = document.getElementById('bookmarks-container');
 const bookmarksBtn = document.getElementById('bookmarks-btn');
-const refreshBookmarksBtn = document.getElementById('refresh-bookmarks');
 const importAllBookmarksBtn = document.getElementById('import-all-bookmarks');
 
 // 打开书签模态框
@@ -13,36 +12,65 @@ bookmarksBtn.addEventListener('click', () => {
 
 // 关闭模态框
 bookmarksModal.querySelector('.close-btn').addEventListener('click', () => {
-  bookmarksModal.style.display = 'none';
+  closeBookmarksModal();
 });
 
 // 点击模态框外部关闭
 window.addEventListener('click', (e) => {
   if (e.target === bookmarksModal) {
-    bookmarksModal.style.display = 'none';
+    closeBookmarksModal();
   }
 });
 
-// 刷新书签列表
-refreshBookmarksBtn.addEventListener('click', loadBookmarks);
+function closeBookmarksModal() {
+  document.getElementById('bookmarks-input').dispatchEvent(new Event('change', {
+    bubbles: false,
+    cancelable: false,
+    composed: false
+  })); // 清空bookmarks-container的内容
+  bookmarksModal.style.display = 'none';
+}
 
 // 导入所有书签
-importAllBookmarksBtn.addEventListener('click', () => {
+importAllBookmarksBtn.addEventListener('click', importCurrentFolder);
+
+function importCurrentFolder() {
+  console.log('现在批量导入的书签:');
+  // 表示导入当前选中目录下的所有书签
   const bookmarkItems = document.querySelectorAll('.bookmark-item');
+  const activeFolder = document.querySelector('.folder-header.active')
+  const category = activeFolder.querySelector('span').textContent;
+  console.log('当前选中的文件夹:', activeFolder, category);
+  let toInsert = [];
   bookmarkItems.forEach(item => {
     const title = item.querySelector('.bookmark-title').textContent;
     const url = item.querySelector('.bookmark-url').textContent;
     const icon = item.querySelector('.bookmark-icon').src;
-    importBookmark(title, url, icon);
+    toInsert.push({
+      title: title,
+      description: '',
+      url: url,
+      icon: icon,
+      type: 'bookmark',
+      views: 0,
+      likes: 0,
+    })
   });
-  showToast('所有书签已导入');
-});
+  batchImportBookMark({
+    children: toInsert,
+    title: category,
+  }).then(res => {
+    toast.success('书签已全部导入');
+  }).catch(err => {
+    toast.error('导入失败：' + err);
+  })
+}
 
 // 加载书签列表
 async function loadBookmarks() {
   try {
     const bookmarks = await chrome.bookmarks.getTree();
-    console.log('本地缓存的书签列表信息:', bookmarks);
+    // console.log('本地缓存的书签列表信息:', bookmarks);
     const bookmarksTree = document.getElementById('bookmarks-tree');
     bookmarksTree.innerHTML = '';
     bookmarksContainer.innerHTML = '';
@@ -56,13 +84,13 @@ async function loadBookmarks() {
 // 渲染书签树
 function renderBookmarkTree(bookmark, container) {
   if (bookmark.children) {
-    console.log('现在渲染的文件夹:', bookmark);
+    // console.log('现在渲染的文件夹:', bookmark);
     const treeItem = document.createElement('div');
     treeItem.className = 'bookmarks-tree-item';
     if (bookmark.title) { // 只为有标题的文件夹创建头部
       const folderHeader = document.createElement('div');
-      const showThisDiv = bookmark.id == '1' 
-      folderHeader.className = `folder-header ${showThisDiv ? ' active': ''}`;
+      const showThisDiv = bookmark.id == '1'
+      folderHeader.className = `folder-header ${showThisDiv ? ' active' : ''}`;
       folderHeader.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="folder-icon">
           <polyline points="9 18 15 12 9 6"></polyline>
@@ -141,7 +169,7 @@ function createBookmarkFold(bookmark) {
   div.appendChild(info);
   div.appendChild(actions);
 
-  console.log('现在显示的书签文件夹:', bookmark);
+  // console.log('现在显示的书签文件夹:', bookmark);
 
   // 导入按钮点击事件
   actions.querySelector('.import-folder-btn').addEventListener('click', async () => {
