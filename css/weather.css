@@ -1,0 +1,51 @@
+.clock {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 10px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  margin-bottom: 20px;
+}
+
+.weather-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-right: 20px;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.weather-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.weather-icon .icon {
+  width: 24px;
+  height: 24px;
+  color: currentColor;
+}
+
+.weather-temp {
+  font-size: 1.2em;
+  font-weight: 500;
+}
+
+.clock-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.time {
+  font-size: 1.5em;
+  font-weight: 600;
+}
+
+.date {
+  font-size: 0.9em;
+  opacity: 0.8;
+}

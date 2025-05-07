@@ -1,0 +1,46 @@
+.daily-quote {
+  padding: 15px;
+  text-align: center;
+  line-height: 1.6;
+}
+
+.quote-text {
+  font-size: 1.1em;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.quote-title {
+    text-align: center;
+    font-size: 1.2em;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+.quote-author {
+    text-align: right;
+    font-size: 1.1em;
+    margin-bottom: 10px;
+}
+
+.quote-translation {
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+
+.loading {
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.error {
+  text-align: center;
+  color: var(--error-color);
+}
+
+.main-tips {
+    position: fixed;
+    opacity: 0.6;
+    right: 1rem;
+    top: 10rem;
+    width: 20%;
+}

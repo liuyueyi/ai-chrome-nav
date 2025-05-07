@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>QuickNav Suite - 3秒定制导航，90%操作提速</title>
   <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="css/daily-quote.css">
 </head>
 <body>
   <div class="app">
@@ -61,8 +62,16 @@
       <section class="search-section">
         <div class="search-container">
           <div class="clock" id="clock-display" style="display: none;">
-            <div class="time">00:00:00</div>
-            <div class="date">2024年1月1日 星期一</div>
+            <div class="weather-info" style="display: none;">
+              <div class="weather-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M12 3v2"></path><path d="M12 19v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path><circle cx="12" cy="12" r="5"></circle></svg>
+              </div>
+              <div class="weather-temp">25°C</div>
+            </div>
+            <div class="clock-info">
+              <div class="time">00:00:00</div>
+              <div class="date">2024年1月1日 星期一</div>
+            </div>
           </div>
           <div class="search-box">
             <div class="search-type">
@@ -83,6 +92,10 @@
               <!-- 收藏的卡片将在这里动态插入 -->
             </div>
           </div>
+        </div>
+
+        <div class="main-tips">
+          每日一句
         </div>
 
         <div class="hero-section" id="hero-section" style="display: none;">
@@ -196,12 +209,15 @@
 
   <link rel="stylesheet" href="css/card-view-modes.css">
   <link rel="stylesheet" href="css/bookmarks.css">
+  <link rel="stylesheet" href="css/weather.css">
   <script src="js/particles.js"></script>
   <script src="js/clock.js"></script>
   <script src="js/toast.js"></script>
   <script src="js/kv.js"></script>
   <script src="js/server.js"></script>
   <script src="js/main.js"></script>
+  <script src="js/weather.js"></script>
+  <script src="js/oneSentence.js"></script>
   <script src="js/bookmarks.js"></script>
 </body>
 </html>
