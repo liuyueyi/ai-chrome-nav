@@ -34,6 +34,55 @@ function cacheSaveToolsData(data) {
     })
 }
 
+// 添加到导航
+async function addCard(data) {
+    let toolsData = await cacheGetToolsData()
+    let oldLen = toolsData.length
+    // 首先根据url进行去重
+    toolsData = toolsData.filter(item => item.url !== data.url)
+    if (toolsData.length === oldLen) {
+        if (!data.id) {
+            data.id = Date.now().toString()
+        }
+
+        // 说明没有重复的，直接添加
+        toolsData.push(data)
+        await cacheSaveToolsData(toolsData)
+        return true
+    }
+    return false
+}
+
+// 批量添加到导航中
+async function batchAddCard(dataList) {
+    let toolsData = await cacheGetToolsData()
+    // 如果已经存在，就不添加了
+    let hasNew = false;
+    const basicId = Date.now().toString()
+    let cnt = 1;
+    dataList.forEach(data => {
+        if (!data.id) {
+            data.id = `${basicId}${cnt}`;
+            cnt += 1;
+        }
+        if (!data.views) {
+            data.views = 0;
+        }
+        if (!data.likes) {
+            data.likes = 0;
+        }
+        if (!toolsData.find(item => item.url === data.url)) {
+            hasNew = true;
+            toolsData.push(data)
+        }
+    })
+    if (hasNew) {
+        await cacheSaveToolsData(toolsData)
+        return true 
+    }
+    return false
+}
+
 function getToolsCategory() {
     return new Promise((resolve) => {
         chrome.storage.local.get('toolsData', (result) => {
