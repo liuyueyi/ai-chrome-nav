@@ -654,7 +654,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function buildCardContent(tool) {
     // 极简模式下，只展示文字
-    let simpleMode = false;
+    let simpleMode = true;
     if (simpleMode) {
       return `
       <a class="tool-header" href="${tool.url}" target="_blank" data-link-tool-id="${tool.id}" data-tool-url="${tool.url}">
@@ -1280,8 +1280,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return '300'
       } else if (grid == 5) {
         return '250'
-      } else {
+      } else if (grid == 6) {
         return '200'
+      } else if (grid == 7) {
+        return '170'
+      } else if (grid == 8) {
+        return '150'
       }
     }
     // 监听网格列数滑块变化

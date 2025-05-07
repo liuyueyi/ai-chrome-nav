@@ -387,19 +387,9 @@ body:before {
   margin-bottom: 1rem;
 }
 
-/* .category-title {
-  font-size: 1.25rem;
-  font-weight: 500;
-  color: var(--foreground);
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid var(--border-color);
-} */
-
 #tools-container {
-  /* display: grid; */
-  /* grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); */
-  /* gap: 1rem; */
+  grid-template-columns: repeat(auto-fill, minmax(var(--grid-columns), 1fr));
+  gap: 1rem;
 }
 
 .category-tools {
