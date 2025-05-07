@@ -22,6 +22,7 @@
   --card-hover: #ffffff;
   --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
   --radius: 0.5rem;
+  --grid-columns: 200px;
 }
 
 body {
@@ -613,7 +614,7 @@ body:before {
 
 .category-tools {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(var(--grid-columns), 1fr));
   gap: 1rem;
 }
 

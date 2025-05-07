@@ -653,6 +653,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function buildCardContent(tool) {
+    // 极简模式下，只展示文字
+    let simpleMode = false;
+    if (simpleMode) {
+      return `
+      <a class="tool-header" href="${tool.url}" target="_blank" data-link-tool-id="${tool.id}" data-tool-url="${tool.url}">
+              <h3 class="tool-title">${tool.title}</h3>
+            </a>
+      `
+    }
+
     const isFavorite = isFavorited(tool.id);
     return `
         <button class="delete-tool-btn" data-tool-id="${tool.id}">×</button>
@@ -1260,12 +1270,33 @@ document.addEventListener("DOMContentLoaded", () => {
   function initSettings() {
     // 从本地存储加载设置
     const settings = JSON.parse(localStorage.getItem('settings') || '{}');
+    function calculateGridSize(grid) {
+      console.log('当前的grid内容是:', grid); 
+      if (grid == 2) {
+        return '450'
+      } else if (grid == 3) {
+        return '350'
+      } else if (grid == 4) {
+        return '300'
+      } else if (grid == 5) {
+        return '250'
+      } else {
+        return '200'
+      }
+    }
+    // 监听网格列数滑块变化
+    document.getElementById("grid-columns").addEventListener("input", (e) => {
+      console.log('当前的滑块内容是:', e.target.value);
+      document.documentElement.style.setProperty('--grid-columns', `${calculateGridSize(e.target.value)}px`);
+    });
     document.getElementById("show-clock").checked = settings.showClock !== undefined ? settings.showClock : true;
     document.getElementById("show-bookmarks").checked = settings.showBookmarks !== undefined ? settings.showBookmarks : true;
     document.getElementById("particle-density").value = settings.particleDensity || 50;
     document.getElementById("compact-view").checked = settings.compactView !== undefined ? settings.compactView : false;
     document.getElementById("group-by-category").checked = settings.groupByCategory !== undefined ? settings.groupByCategory : false;
     document.getElementById("hide-slogan").checked = settings.hideSlogan !== undefined ? settings.hideSlogan : false;
+    document.getElementById("grid-columns").value = settings.gridColumns || 4;
+    document.documentElement.style.setProperty('--grid-columns', `${calculateGridSize(settings.gridColumns || 4)}px`);
 
     // 应用卡片视图模式
     const mainContainer = document.querySelector('.main');
@@ -1288,6 +1319,7 @@ document.addEventListener("DOMContentLoaded", () => {
       showClock,
       showBookmarks,
       particleDensity,
+      gridColumns: document.getElementById("grid-columns").value,
       compactView,
       groupByCategory,
       hideSlogan
