@@ -179,3 +179,20 @@
 .tools-grid {
     padding-bottom: 2em;
 }
+
+
+.edit-btn {
+  text-decoration: none;
+  color: rgb(179, 9, 9);
+  font-size: 0.8rem;
+  /* 显示一个小手 */
+  cursor: pointer;
+}
+
+.edit-btn:hover {
+  color: #dc3545;
+}
+
+.query-all-item {
+  display: none;
+}

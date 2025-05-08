@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-
+let superAdmin = false;
 async function fetchTotals() {
     // 获取全部信息，包含分类 + 所有工具
     try {
@@ -35,9 +35,14 @@ async function fetchTotals() {
 async function fetchSharedTools(category, search, page) {
     try {
         const params = {
-            key: search && search!== '' ? search : null,
+            key: search && search !== '' ? search : null,
             category: category && category !== 'all' ? category : null,
-            page: page ? page : 1
+            page: page ? page : 1,
+        }
+        const queryAll = document.getElementById("query-all").checked;
+        if (queryAll && superAdmin) {
+            // 查询全部
+            params.state = 2;
         }
         return await get('/api/nav/list', params)
     } catch (error) {
@@ -51,7 +56,18 @@ async function execToolClicked(toolId, liked, clicked) {
     return await postJson('/api/nav/update', {
         id: toolId,
         liked: liked,
-        clicked: clicked    
+        clicked: clicked
+    })
+}
+
+async function execAdminEdit(toolId, state, deleted, category, title, icon) {
+    return await postJson('/api/nav/update', {
+        id: toolId,
+        state: state,
+        deleted: deleted,
+        category: category,
+        title: title,
+        icon: icon
     })
 }
 
@@ -59,6 +75,7 @@ async function execToolClicked(toolId, liked, clicked) {
 let currentPage = 1;
 let isLoading = false;
 let hasMore = true;
+let remoteCategoryList = []
 
 // 加载共享导航卡片
 async function loadSharedTools() {
@@ -70,6 +87,7 @@ async function loadSharedTools() {
     const categoryList = document.getElementById('category-list');
     categoryList.innerHTML = '';
     const categoryMap = {};
+    remoteCategoryList = sharedTools.categoryList;
     sharedTools.categoryList.forEach(category => {
         if (!categoryMap[category]) {
             categoryMap[category] = {
@@ -107,12 +125,20 @@ async function loadSharedTools() {
     currentPage = 1;
     hasMore = true;
     isLoading = false;
+    superAdmin = sharedTools.sa;
+    if (superAdmin) {
+        document.querySelector('.query-all-item').style.display = 'block';
+        document.querySelector('.query-all-item').addEventListener('change', (e) => {
+            e.preventDefault();
+            doFetchList(true);
+        });
+    }
 
     sharedTools.itemList.list.forEach(tool => {
         const card = createToolCard(tool);
         container.appendChild(card);
     });
-    
+
     // 检查是否还有更多数据
     hasMore = sharedTools.itemList.end === false;
 }
@@ -166,7 +192,7 @@ async function filterToolsByCategory(category) {
         const card = createToolCard(tool);
         container.appendChild(card);
     });
-    
+
     // 检查是否还有更多数据
     hasMore = tools.end === false;
 }
@@ -192,7 +218,7 @@ async function filterToolsBySearch(query) {
         const card = createToolCard(tool);
         container.appendChild(card);
     });
-    
+
     // 检查是否还有更多数据
     hasMore = tools.end === false;
 }
@@ -210,7 +236,6 @@ bindSearchListener();
 
 // 绑定滚动监听器
 function bindScrollListener() {
-    const container = document.getElementById('share-tools-container');
     window.addEventListener('scroll', async () => {
         if (isLoading || !hasMore) return;
 
@@ -220,49 +245,65 @@ function bindScrollListener() {
         const clientHeight = document.documentElement.clientHeight;
 
         if (scrollTop + clientHeight >= scrollHeight - 100) { // 距离底部100px时加载
-            isLoading = true;
-            currentPage++;
-
-            // 显示加载提示
-            const loadingTip = document.createElement('div');
-            loadingTip.className = 'loading-tip';
-            loadingTip.textContent = '加载中...';
-            container.appendChild(loadingTip);
-
-            try {
-                const category = getChooseCategory();
-                const searchInput = document.querySelector(".search-input");
-                const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
-                const tools = await fetchSharedTools(category, query, currentPage);
-
-                // 移除加载提示
-                loadingTip.remove();
-
-                if (tools.list && tools.list.length > 0) {
-                    tools.list.forEach(tool => {
-                        const card = createToolCard(tool);
-                        container.appendChild(card);
-                    });
-                    // 更新是否还有更多数据
-                    hasMore = tools.end === false;
-                } else {
-                    hasMore = false;
-                }
-            } catch (error) {
-                console.error('加载更多数据失败:', error);
-                loadingTip.textContent = '加载失败，请重试';
-                setTimeout(() => loadingTip.remove(), 2000);
-            }
-
-            isLoading = false;
+            await doFetchList(false);
         }
     });
+}
+
+async function doFetchList(restart = false) {
+    const container = document.getElementById('share-tools-container');
+
+    isLoading = true;
+    currentPage++;
+
+    if (restart) {
+        currentPage = 1;
+        hasMore = true;
+        isLoading = false;
+        container.innerHTML = '';
+    }
+
+    // 显示加载提示
+    const loadingTip = document.createElement('div');
+    loadingTip.className = 'loading-tip';
+    loadingTip.textContent = '加载中...';
+    container.appendChild(loadingTip);
+
+    try {
+        const category = getChooseCategory();
+        const searchInput = document.querySelector(".search-input");
+        const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const tools = await fetchSharedTools(category, query, currentPage);
+
+        // 移除加载提示
+        loadingTip.remove();
+
+        if (tools.list && tools.list.length > 0) {
+            tools.list.forEach(tool => {
+                const card = createToolCard(tool);
+                container.appendChild(card);
+            });
+            // 更新是否还有更多数据
+            hasMore = tools.end === false;
+        } else {
+            hasMore = false;
+        }
+    } catch (error) {
+        console.error('加载更多数据失败:', error);
+        loadingTip.textContent = '加载失败，请重试';
+        setTimeout(() => loadingTip.remove(), 2000);
+    }
+
+    isLoading = false;
 }
 
 // 创建导航卡片
 function createToolCard(tool) {
     const card = document.createElement('div');
-    card.className = 'tool-card';
+    card.className = `tool-card`;
+    if (tool.state == -1) {
+        card.style.backgroundColor = '#ec8989';
+    }
 
     card.innerHTML = `
     <div class="tool-icon">
@@ -291,14 +332,22 @@ function createToolCard(tool) {
         </div>
         </div>
         <div class="tool-actions">
+            <div class="admin-operate-btn">
+                <div class="edit-btn" data-edit-tool-id="${tool.id}" data-tool-url="${tool.url}" data-cateogry='${tool.category} data-state='${tool.state}'>
+                    编辑
+                </div>
+            </div>
             <a class="to_website" data-link-tool-id="${tool.id}" data-tool-url="${tool.url}" href="${tool.url}" target="_blank">
             访问网站
             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></svg>
-        </a>
+            </a>
         </div>
     </div>
   `;
 
+    if (!superAdmin) {
+        card.querySelector('.admin-operate-btn').style.display = 'none';
+    }
 
     // 添加导入按钮点击事件
     const importBtn = card.querySelector('.import-btn');
@@ -317,6 +366,13 @@ function createToolCard(tool) {
             card.querySelector('.click-stat span').textContent = (tool.clickCnt || 0) + 1;
         }
     });
+
+    card.querySelector('.edit-btn').addEventListener('click', async () => {
+        if (superAdmin) {
+            openEditToolModal(tool);
+        }
+    })
+
     return card;
 }
 
@@ -434,7 +490,7 @@ function handleImportToolSubmit(e, tool) {
             if (localTools.some(t => t.url === tool.url)) {
                 toast.warning('该工具已经在您的导航中', 1500);
                 closeImportToolModal();
-                bindImportClickListener(tool); 
+                bindImportClickListener(tool);
                 return;
             }
 
@@ -520,5 +576,145 @@ function openImportToolModal(tool) {
     handleCategorySelect();
 }
 
+
+// ---------------------------------------------------------------- 编辑导航卡
+
+
+// 编辑导航卡片的模态框HTML
+const editToolModal = `
+  <div id="edit-tool-modal" class="modal">
+        
+    <div class="modal-content">
+        <div style="display:flex;align-items: center;justify-content: space-between;">
+          <h2>编辑导航</h2>
+          <button class="close-btn" id="close-btn">×</button>
+        </div>
+      <h3 id="cardTitle"> 标题 - 正常</h3>
+      <form id="edit-tool-form" style="margin-top:1rem">
+        <div class="form-group">
+           <label for="edit-title">标题</label>
+           <input type="text" id="edit-title" name="title" required>
+           <label for="edit-icon">图标</label>
+           <input type="text" id="edit-icon" name="icon" required>
+          <label for="edit-category">分类</label>
+          <select id="edit-category" name="category" data-custom="allow">
+            ${getCategories().map(c => `<option value="${c}">${c}</option>`).join('')}
+          </select>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn btn-primary" id="approve-tool-btn">通过</button>
+          <button type="button" class="btn btn-ghost" id="reject-tool-btn">拒绝</button>
+          <button type="button" class="btn btn-danger" id="delete-tool-btn">删除</button>
+        </div>
+      </form>
+    </div>
+  </div>
+`;
+
+// 将编辑模态框添加到body
+document.body.insertAdjacentHTML('beforeend', editToolModal);
+document.getElementById('close-btn').addEventListener('click', closeEditToolModal);
+document.getElementById('edit-tool-modal').addEventListener('click', function (e) {
+    if (e.target === this) {
+        closeEditToolModal();
+    }
+});
+
+// 关闭编辑工具模态框
+function closeEditToolModal() {
+    document.getElementById('edit-tool-modal').classList.remove('active');
+}
+
+// 打开编辑工具模态框
+function openEditToolModal(tool) {
+    const modal = document.getElementById('edit-tool-modal');
+    const form = document.getElementById('edit-tool-form');
+    const editTitle = document.getElementById('edit-title');
+    editTitle.value = tool.title;
+
+    const icon = document.getElementById('edit-icon');
+    icon.value = tool.icon;
+    const categorySelect = document.getElementById('edit-category');
+    const title = document.getElementById('cardTitle');
+    if (tool.state === -1) {
+        title.innerText = `${tool.title} - 已拒绝`;
+        title.style.color = 'red';
+    } else if (tool.state === 0) {
+        title.innerText = `${tool.title} - 待审核`;
+        title.style.color = 'orange';
+    } else {
+        title.innerText = `${tool.title} - 正常`;
+        title.style.color = 'green';
+    }
+
+    // 更新分类选项
+    categorySelect.innerHTML = '';
+    remoteCategoryList.forEach(c => {
+        const option = document.createElement('option');
+        option.value = c;
+        option.textContent = c;
+        categorySelect.appendChild(option);
+    });
+
+    // 添加新增分类选项
+    const newOption = document.createElement('option');
+    newOption.value = 'new';
+    newOption.textContent = '+ 添加新分类';
+    categorySelect.appendChild(newOption);
+    categorySelect.addEventListener('change', (e) => {
+        if (e.target.value === 'new') {
+            const newCategory = prompt('请输入新分类名称：');
+            if (newCategory) {
+                const option = document.createElement('option');
+                option.value = newCategory;
+                option.textContent = newCategory;
+                categorySelect.insertBefore(option, categorySelect.lastChild);
+                categorySelect.value = newCategory;
+            }
+        }
+    });
+
+
+    // 添加按钮事件
+    document.getElementById('approve-tool-btn').onclick = async () => {
+        try {
+            await execAdminEdit(tool.id, 1, 0, form.category.value, editTitle.value, icon.value);
+            toast.success('操作成功');
+            closeEditToolModal();
+            // 刷新当前分类的工具列表
+            filterToolsByCategory(getChooseCategory());
+        } catch (error) {
+            toast.error('操作失败: ' + error);
+        }
+    };
+
+    document.getElementById('reject-tool-btn').onclick = async () => {
+        try {
+            await execAdminEdit(tool.id, -1, 0, form.category.value);
+            toast.success('操作成功');
+            closeEditToolModal();
+            // 刷新当前分类的工具列表
+            filterToolsByCategory(getChooseCategory());
+        } catch (error) {
+            toast.error('操作失败: ' + error);
+        }
+    };
+
+    document.getElementById('delete-tool-btn').onclick = async () => {
+        if (confirm('确定要删除这个工具吗？')) {
+            try {
+                await execAdminEdit(tool.id, null, 1, form.category.value);
+                toast.success('删除成功');
+                closeEditToolModal();
+                // 刷新当前分类的工具列表
+                filterToolsByCategory(getChooseCategory());
+            } catch (error) {
+                toast.error('删除失败: ' + error);
+            }
+        }
+    };
+
+    modal.classList.add('active');
+}
 
 // ------------------------------------------------------------------------------------
