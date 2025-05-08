@@ -21,6 +21,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         categorySelect.innerHTML = '';
         getToolsCategory().then(categories => {
+            if (categories.length === 0) {
+                categories = ['未分组'];
+            }
             categories.forEach(c => {
                 const option = document.createElement('option');
                 option.value = c;
@@ -96,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             title: document.getElementById('title').value,
             url: document.getElementById('url').value,
             description: document.getElementById('description').value,
-            category: document.getElementById('category').value,
+            category: document.getElementById('category').value == 'new' ? '未分组' : document.getElementById('category').value,
             sort: document.getElementById('sort').value,
             icon: tab.favIconUrl || 'public/placeholder.svg',
             views: 0,

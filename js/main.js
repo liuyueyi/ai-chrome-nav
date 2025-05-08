@@ -605,6 +605,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (favoriteTools.length === 0) {
         console.log('没有收藏工具，隐藏 “favorites-section”');
         document.getElementById('favorites-section').style.display = 'none';
+        setupEventListeners();
         return;
       } else {
         document.getElementById('favorites-section').style.display = 'block';
@@ -1107,6 +1108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // });
 
     historyBtn.addEventListener("click", () => {
+      console.log('打开历史记录')
       chrome.tabs.create({ url: "chrome://history/" });
     });
 
@@ -1118,6 +1120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const addNavBtn = document.getElementById("add-nav-btn")
 
     settingsBtn.addEventListener("click", () => {
+      console.log('打开设置')
       settingsModal.classList.add("active")
     })
 

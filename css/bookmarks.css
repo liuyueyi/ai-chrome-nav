@@ -140,13 +140,16 @@
     background: var(--hover-bg);
     color: var(--text-primary);
 }
-
+.bookmark-actions button.import-folder-btn {
+    color: var(--foreground);
+    border-color: var(--gray-900);
+}
 .bookmark-actions button.import-btn {
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+    color: var(--foreground);
+    border-color: var(--gray-300);
 }
 
-.bookmark-actions button.import-btn:hover {
-    background: var(--primary-color);
+.bookmark-actions button.import-btn:hover, button.import-folder-btn:hover  {
+    background: var(--primary);
     color: white;
 }
