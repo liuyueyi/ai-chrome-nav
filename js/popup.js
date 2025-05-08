@@ -1,4 +1,7 @@
+let first = false;
 document.addEventListener('DOMContentLoaded', async () => {
+    first = true;
+    console.error('整体内容开始初始化:', Date.now().toString(), first);
     // 获取当前标签页信息
     const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
     const description = await chrome.scripting.executeScript({
@@ -10,9 +13,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }).then(results => results[0]?.result || '');
 
-
-    // 处理分类选择
-    function handleCategorySelect() {
+    function categorySelectInit() {
+        console.error('初始化分类选择');
+        // 初始化分类选择
         const categorySelect = document.getElementById('category');
         if (!categorySelect) {
             console.warn('Category select element not found');
@@ -20,11 +23,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         categorySelect.innerHTML = '';
+        let hasNoCategory = false;
         getToolsCategory().then(categories => {
-            if (categories.length === 0) {
-                categories = ['未分组'];
-            }
             categories.forEach(c => {
+                if (c === '未分组') {
+                    hasNoCategory = true;
+                }
                 const option = document.createElement('option');
                 option.value = c;
                 option.textContent = c;
@@ -47,8 +51,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const modal = document.getElementById('categoryModal');
                 modal.style.display = 'block';
 
+                // 隐藏分类选择
+                document.getElementById('category').style.display = 'none';
+
                 // 监听确认按钮点击
                 document.getElementById('confirmCategory').addEventListener('click', () => {
+                    e.preventDefault();
                     const newCategory = document.getElementById('newCategoryInput').value;
                     if (newCategory) {
                         const option = document.createElement('option');
@@ -60,7 +68,19 @@ document.addEventListener('DOMContentLoaded', async () => {
                         modal.style.display = 'none';
                         // 清空输入框
                         document.getElementById('newCategoryInput').value = '';
+
+                        document.getElementById('category').style.display = 'block';
                     }
+                });
+
+                document.getElementById('cancelCategory').addEventListener('click', () => {
+                    e.preventDefault();
+                    // 隐藏模态框
+                    modal.style.display = 'none';
+                    // 清空输入框
+                    document.getElementById('newCategoryInput').value = '';
+                    categorySelect.value = '未分组';
+                    document.getElementById('category').style.display = 'block';
                 });
             } else {
                 // 隐藏模态框
@@ -68,10 +88,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                 modal.style.display = 'none';
             }
         });
+
+        if (!hasNoCategory) {
+            const option = document.createElement('option');
+            option.value = '未分组';
+            option.textContent = '未分组';
+            categorySelect.appendChild(option);
+        }
+        categorySelect.value = '未分组';
     }
 
-    // 初始化分类选择事件
-    handleCategorySelect();
+    // 初始化分类选择
+    categorySelectInit();
 
     // 预填充表单
     if (tab) {

@@ -6,6 +6,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>添加导航</title>
     <style>
+        .head {
+            margin-bottom: 20px;
+            padding-top: 14rpx;
+            border-bottom: #7e7c7c 0.5px dotted;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+        }
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+        .logo-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        .logo-subtitle {
+            font-size: 12px;
+            color: #666;
+            margin-top: 2px;
+        }
         body {
             width: 320px;
             padding: 16px;
@@ -60,10 +88,55 @@
         .modal {
             display: none;
         }
+        .input-group {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            margin-bottom: 8rpx;
+        }
+        .btn-group {
+            display: flex;
+            align-items: center;
+            flex-direction: row;
+            padding: 12rpx;
+            margin-top: 10rpx;
+            /* 右对齐 */
+            justify-content: flex-end;
+        }
+        .input-cancel-btn {
+            padding: 8px;
+            background: #5b95f2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 1rem;
+        }
+        .input-confirm-btn {
+            padding: 8px;
+            background: #f12409;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
     </style>
 </head>
 
 <body>
+    <div class="head">
+        <div class="logo">
+            <div>
+                <img src="assets/icon.png" class="logo-icon" alt="QuickNav Logo">
+            </div>
+            <div class="logo-text">
+                <span class="logo-title">QuickNav</span>
+                <span class="logo-subtitle">快速导航效果工具</span>
+            </div>
+        </div>
+    </div>
     <form id="addToolForm">
         <div class="form-group">
             <label for="title">标题</label>
@@ -89,9 +162,14 @@
             <label for="category">分类</label>
             <div id="categoryModal" class="modal">
                 <div class="modal-content">
-                    <h3>请输入新分类名称</h3>
-                    <input type="text" id="newCategoryInput" placeholder="新分类名称">
-                    <button id="confirmCategory">确认</button>
+                    <div class="input-group">
+                        <input type="text" id="newCategoryInput" placeholder="请输入新分类名称">
+                    </div>
+                    
+                    <div class="btn-group">
+                        <div class="input-cancel-btn" id="cancelCategory">取消</div>
+                        <div class="input-confirm-btn" id="confirmCategory">确认</div>
+                    </div>
                 </div>
             </div>
             <!-- <input type="text" id="category" name="category" required> -->
