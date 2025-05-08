@@ -55,6 +55,11 @@ async function execToolClicked(toolId, liked, clicked) {
     })
 }
 
+// 当前页码和加载状态
+let currentPage = 1;
+let isLoading = false;
+let hasMore = true;
+
 // 加载共享导航卡片
 async function loadSharedTools() {
     const container = document.getElementById('share-tools-container');
@@ -96,11 +101,20 @@ async function loadSharedTools() {
         categoryList.appendChild(categoryItem);
     })
     bindCategoryChooseListener();
+    bindScrollListener();
+
+    // 重置分页状态
+    currentPage = 1;
+    hasMore = true;
+    isLoading = false;
 
     sharedTools.itemList.list.forEach(tool => {
         const card = createToolCard(tool);
         container.appendChild(card);
     });
+    
+    // 检查是否还有更多数据
+    hasMore = sharedTools.itemList.end === false;
 }
 
 function bindCategoryChooseListener() {
@@ -137,15 +151,24 @@ async function filterToolsByCategory(category) {
     const tools = await fetchSharedTools(category, null, 1);
     console.log('过滤的卡片列表:', tools);
 
+    // 重置分页状态
+    currentPage = 1;
+    hasMore = true;
+    isLoading = false;
+
     container.innerHTML = '';
     if (tools.list.length === 0) {
         container.innerHTML = `<div></div><div class="no-results">没有找到相关的工具</div>`;
+        hasMore = false;
         return;
     }
     tools.list.forEach(tool => {
         const card = createToolCard(tool);
         container.appendChild(card);
     });
+    
+    // 检查是否还有更多数据
+    hasMore = tools.end === false;
 }
 
 async function filterToolsBySearch(query) {
@@ -154,15 +177,24 @@ async function filterToolsBySearch(query) {
     const tools = await fetchSharedTools(category, query, 1);
     console.log('过滤的卡片列表:', tools);
 
+    // 重置分页状态
+    currentPage = 1;
+    hasMore = true;
+    isLoading = false;
+
     container.innerHTML = '';
     if (tools.list.length === 0) {
         container.innerHTML = `<div></div><div class="no-results">没有找到相关的工具</div>`;
+        hasMore = false;
         return;
     }
     tools.list.forEach(tool => {
         const card = createToolCard(tool);
         container.appendChild(card);
     });
+    
+    // 检查是否还有更多数据
+    hasMore = tools.end === false;
 }
 
 function bindSearchListener() {
@@ -175,6 +207,57 @@ function bindSearchListener() {
     })
 }
 bindSearchListener();
+
+// 绑定滚动监听器
+function bindScrollListener() {
+    const container = document.getElementById('share-tools-container');
+    window.addEventListener('scroll', async () => {
+        if (isLoading || !hasMore) return;
+
+        // 检查是否滚动到底部
+        const scrollHeight = document.documentElement.scrollHeight;
+        const scrollTop = window.scrollY;
+        const clientHeight = document.documentElement.clientHeight;
+
+        if (scrollTop + clientHeight >= scrollHeight - 100) { // 距离底部100px时加载
+            isLoading = true;
+            currentPage++;
+
+            // 显示加载提示
+            const loadingTip = document.createElement('div');
+            loadingTip.className = 'loading-tip';
+            loadingTip.textContent = '加载中...';
+            container.appendChild(loadingTip);
+
+            try {
+                const category = getChooseCategory();
+                const searchInput = document.querySelector(".search-input");
+                const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+                const tools = await fetchSharedTools(category, query, currentPage);
+
+                // 移除加载提示
+                loadingTip.remove();
+
+                if (tools.list && tools.list.length > 0) {
+                    tools.list.forEach(tool => {
+                        const card = createToolCard(tool);
+                        container.appendChild(card);
+                    });
+                    // 更新是否还有更多数据
+                    hasMore = tools.end === false;
+                } else {
+                    hasMore = false;
+                }
+            } catch (error) {
+                console.error('加载更多数据失败:', error);
+                loadingTip.textContent = '加载失败，请重试';
+                setTimeout(() => loadingTip.remove(), 2000);
+            }
+
+            isLoading = false;
+        }
+    });
+}
 
 // 创建导航卡片
 function createToolCard(tool) {

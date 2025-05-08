@@ -500,10 +500,10 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           try {
             const ans = await postJson('/api/nav/submit', {
-              title: tool.title,
+              title: tool.title.length >= 125 ? tool.title.substring(0, 120) + '...' : tool.title,
               icon: tool.icon,
-              intro: tool.description,
-              category: tool.category,
+              intro: tool.description.length >= 500 ? tool.description.substring(0, 500) + '...' : tool.description,
+              category: tool.category.length > 60 ? tool.category.substring(0, 60) + '...' : tool.category,
               url: tool.url,
               author: 'HuHui',
             })
@@ -526,10 +526,10 @@ document.addEventListener("DOMContentLoaded", () => {
           for (var tool of currentTools) {
             if (tool.category == category) {
               params.push({
-                title: tool.title,
+                title: tool.title.length >= 125? tool.title.substring(0, 120) + '...' : tool.title,
                 icon: tool.icon,
-                intro: tool.description,
-                category: tool.category,
+                intro: tool.description.length >= 500? tool.description.substring(0, 500) + '...' : tool.description,
+                category: tool.category.length > 60? tool.category.substring(0, 60) + '...' : tool.category,
                 url: tool.url,
                 author: 'HuHui',
               })

@@ -160,3 +160,22 @@
 .tool-info {
   padding-bottom: 1rem;
 }
+
+.no-results {
+  text-align: center;
+  color: #666;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+.loading-tip {
+  text-align: center;
+  color: #666;
+  padding: 10px 0;
+  font-size: 14px;
+  width: 100%;
+}
+
+.tools-grid {
+    padding-bottom: 2em;
+}
