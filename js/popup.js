@@ -110,7 +110,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (existingTool) {
                 document.getElementById('category').value = existingTool.category;
                 document.getElementById('add-nav-btn').innerText = '更新导航卡';
-                document.getElementById('sort').value = existingTool.sort;
+                document.getElementById('sort').value = existingTool.sort || 0;
+            } else {
+                document.getElementById('sort').value = 0;
             }
         })
         document.getElementById('title').value = tab.title || '';
