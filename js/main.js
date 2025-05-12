@@ -1182,11 +1182,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const searchTypeBtn = document.querySelector(".search-type-btn")
     const searchEngines = [
       { name: "站内", url: null },
-      { name: "百度", url: "https://www.baidu.com/s?wd=" },
-      { name: "谷歌", url: "https://www.google.com/search?q=" },
-      { name: "必应", url: "https://www.bing.com/search?q=" },
-      { name: "搜狗", url: "https://www.sogou.com/web?query=" },
-      { name: "360", url: "https://www.so.com/s?q=" }
+      { name: "联网", url: 'network' },
+      // { name: "百度", url: "https://www.baidu.com/s?wd=" },
+      // { name: "谷歌", url: "https://www.google.com/search?q=" },
+      // { name: "必应", url: "https://www.bing.com/search?q=" },
+      // { name: "搜狗", url: "https://www.sogou.com/web?query=" },
+      // { name: "360", url: "https://www.so.com/s?q=" }
     ]
 
     // 从本地存储加载搜索引擎配置
@@ -1238,9 +1239,25 @@ document.addEventListener("DOMContentLoaded", () => {
     function doSearch(query) {
       query = query.trim()
       if (query) {
-        if (currentSearchEngine.url) {
-          window.open(currentSearchEngine.url + encodeURIComponent(query), "_blank")
-        } else {
+        if (currentSearchEngine.url === 'network') {
+          // 检查chrome API是否可用
+          if (typeof chrome !== 'undefined' && chrome.search && chrome.search.query) {
+            try {
+              chrome.search.query({
+                text: query,
+                disposition: 'NEW_TAB'
+              });
+            } catch (e) {
+              console.error('Chrome搜索API调用失败:', e);
+              // 降级到默认搜索方式
+              filterToolsBySearch(query);
+            }
+          } else {
+            // Chrome API不可用时降级到默认搜索
+            console.warn('Chrome搜索API不可用，使用默认搜索方式');
+            filterToolsBySearch(query);
+          }
+        }  else {
           filterToolsBySearch(query)
         }
       }

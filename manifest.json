@@ -1,9 +1,9 @@
 {
   "manifest_version": 3,
   "name": "QuickNav Suite - 3秒定制导航，90%操作提速",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "3秒定制导航，90%操作提速",
-  "permissions": ["storage", "bookmarks", "tabs", "activeTab", "scripting"],
+  "permissions": ["storage", "bookmarks", "tabs", "activeTab", "scripting", "search"],
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
